@@ -30,19 +30,18 @@ export class AnimationRecordError{
 
 export interface AnimationRecordInterface{
     
-    init(containerElement: HTMLElement): void;
+    init(  config?: {bufferSize: number, numChannels: number, mimeType: string},
+    containerElement?: HTMLElement): void;
 
     start(): Promise<void>;
 
-    stop(): Promise<File>;
+    stop(): Promise<Blob>;
 
-    addEventListener( AnimationRecordEventName, callback: (AnimationRecordEvent) => void ): void;
+    addEventListener( animationRecordEventName:AnimationRecordEventName, callback: (animationRecordEvent: AnimationRecordEvent) => void ): void;
 
-    removeEventListener(AnimationRecordEventName, callback: (AnimationRecordEvent) => void ): void;
+    removeEventListener(animationRecordEventName: AnimationRecordEventName, callback: (animationRecordEvent: AnimationRecordEvent) => void ): void;
 
-    onRecoding(Float32Array): void;
-
-    throwRecordError(AnimationRecordError): void;
+    throwRecordError(animationRecordError: AnimationRecordError): void;
     
 
 }
