@@ -1,17 +1,17 @@
-// 注意：引入的方式
-// 引入koa
-const koa = require('koa2');
-const app = new koa();
+const Koa = require('koa');
+const KoaStatic = require('koa-static');
+const Path = require('path');
 
-const static = require('koa-static');
-app.use((ctext, next)=>{
-    console.log(ctext.request.url);
+const app = new Koa();
+
+app.use( KoaStatic(Path.resolve(__dirname,'../'),{defer: true, }) );
+app.use( (context, next) => {
+    const url = context.request.url || '';
+    if(/\/[^\.|\/]+$/.test(url)){
+        context.request.url = `${url}.js`
+    }
+    console.log(context.request.url)
     next();
 })
-// 配置静态web服务的中间件
-app.use(static(__dirname+'\\demo'));
-console.log(__dirname+'\\demo')    
-// 监听端口≈
-app.listen(3000,function(){
-    console.log('启动成功');
-});
+app.listen(3000);
+console.log(`http://localhost:3000`);

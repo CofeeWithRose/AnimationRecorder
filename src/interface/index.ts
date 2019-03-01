@@ -1,14 +1,19 @@
-export interface  AnimationRecordEventName{
+export interface  AnimationRecordEvents{
     
-    onRecoding:  'onRecoding',
+    "audioprocess":  AnimationRecordEvent<Float32Array>,
 
 }
 
-export class AnimationRecordEvent{
+export class AnimationRecordEvent<Data>{
 
+    constructor(eventName: string, data: Data){
+        this.eventName = eventName;
+        this.data = data;
+    }
+    
     eventName: string;
 
-    data: any;
+    data: Data;
 }
 
 export enum AnimationRecordErrorName{
@@ -37,9 +42,9 @@ export interface AnimationRecordInterface{
 
     stop(): Promise<Blob>;
 
-    addEventListener( animationRecordEventName:AnimationRecordEventName, callback: (animationRecordEvent: AnimationRecordEvent) => void ): void;
+    addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, callback: (event: AnimationRecordEvents[K])=> void ): void;
 
-    removeEventListener(animationRecordEventName: AnimationRecordEventName, callback: (animationRecordEvent: AnimationRecordEvent) => void ): void;
+    removeEventListener<K extends keyof AnimationRecordEvents>(animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void ): void;
 
     throwRecordError(animationRecordError: AnimationRecordError): void;
     

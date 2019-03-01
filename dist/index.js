@@ -33,46 +33,56 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import { AnimationRecordError, AnimationRecordErrorName } from "./interface/index";
+import { AnimationRecordError, AnimationRecordErrorName, AnimationRecordEvent } from "./interface/index";
+import { EventEmitter } from "./util/events/index";
 var AnimationRecorder = (function () {
     function AnimationRecorder() {
         this.audioContext = new AudioContext();
         this.config = null;
+        this.eventEmit = new EventEmitter();
     }
     AnimationRecorder.prototype.init = function (config, containerElement) {
-        if (config === void 0) { config = { bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' }; }
-        this.config = config;
+        this.config = config || { bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' };
     };
     AnimationRecorder.prototype.start = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, bufferSize, numChannels, scriptProcessorNode, mediaStream, mediaStreamAudioSourceNode;
+            var _a, bufferSize, numChannels, mediaStream;
+            var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
-                        scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
-                        scriptProcessorNode.addEventListener('audioprocess', function (audioProcessingEvent) {
+                        this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
+                        this.scriptProcessorNode.addEventListener('audioprocess', function (audioProcessingEvent) {
                             console.log(audioProcessingEvent);
+                            var data = audioProcessingEvent.inputBuffer.getChannelData(0);
+                            _this.eventEmit.emit('audioprocess', new AnimationRecordEvent('audioprocess', data));
                         });
                         return [4, this.getUserMedia({ audio: true })];
                     case 1:
                         mediaStream = _b.sent();
-                        mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
-                        scriptProcessorNode.connect(mediaStreamAudioSourceNode);
+                        this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
+                        this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
+                        this.scriptProcessorNode.connect(this.audioContext.destination);
                         return [2];
                 }
             });
         });
     };
     AnimationRecorder.prototype.stop = function () {
+        this.scriptProcessorNode.disconnect();
+        this.mediaStreamAudioSourceNode.disconnect();
+        console.log('stop.');
         return new Promise(function (resolve, reject) {
             resolve(new Blob());
         });
     };
     AnimationRecorder.prototype.addEventListener = function (animationRecordEventName, callback) {
+        this.eventEmit.addListener(animationRecordEventName, callback);
     };
     ;
     AnimationRecorder.prototype.removeEventListener = function (animationRecordEventName, callback) {
+        this.eventEmit.removeListener(animationRecordEventName, callback);
     };
     ;
     AnimationRecorder.prototype.throwRecordError = function (error) {

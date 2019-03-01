@@ -18,11 +18,10 @@
   "homepage": "https://github.com/CofeeWithRose/AnimationRecorder#readme",
   "devDependencies": {
     "@types/koa": "^2.0.48",
-    "koa2": "^2.0.0-alpha.7",
     "typescript": "^3.3.3333"
   },
   "dependencies": {
-    "koa-static": "^5.0.0",
-    "koa2-static": "^1.0.1"
+    "koa": "^2.7.0",
+    "koa-static": "^5.0.0"
   }
 }

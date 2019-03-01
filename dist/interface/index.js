@@ -1,5 +1,7 @@
 var AnimationRecordEvent = (function () {
-    function AnimationRecordEvent() {
+    function AnimationRecordEvent(eventName, data) {
+        this.eventName = eventName;
+        this.data = data;
     }
     return AnimationRecordEvent;
 }());

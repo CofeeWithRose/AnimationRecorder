@@ -1,4 +1,5 @@
-import { AnimationRecordInterface, AnimationRecordError, AnimationRecordErrorName, AnimationRecordEventName, AnimationRecordEvent } from "./interface/index";
+import { AnimationRecordInterface, AnimationRecordError, AnimationRecordErrorName, AnimationRecordEvent, AnimationRecordEvents } from "./interface/index";
+import { EventEmitter } from "./util/events/index";
 
 export class AnimationRecorder implements AnimationRecordInterface{
 
@@ -6,41 +7,52 @@ export class AnimationRecorder implements AnimationRecordInterface{
 
     private config: {bufferSize: number, numChannels: number, mimeType:string} = null;
 
+    private mediaStreamAudioSourceNode: MediaStreamAudioSourceNode;
+
+    private scriptProcessorNode: ScriptProcessorNode;
+
+    private eventEmit = new  EventEmitter();
+
+
     init( 
-        config = {bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav'},
+        config?: {bufferSize: number, numChannels: number, mimeType:string},
         containerElement?: HTMLElement
     ){
-        this.config = config;
+        this.config = config||{bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav'};
     }
 
     async start(){
 
         const { bufferSize, numChannels } = this.config;
-        const scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
-        scriptProcessorNode.addEventListener('audioprocess', (audioProcessingEvent: AudioProcessingEvent) => {
+        this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
+        this.scriptProcessorNode.addEventListener('audioprocess', (audioProcessingEvent: AudioProcessingEvent) => {
             console.log( audioProcessingEvent );
+            const data = audioProcessingEvent.inputBuffer.getChannelData(0);
+            this.eventEmit.emit('audioprocess', new AnimationRecordEvent<Float32Array>('audioprocess', data));
         });
 
-        const  mediaStream  = await this.getUserMedia({ audio: true});
-        const mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(mediaStream);
-       
-        scriptProcessorNode.connect(mediaStreamAudioSourceNode);
+        const mediaStream  = await this.getUserMedia({ audio: true});
+        this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(mediaStream);
+        this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
+        this.scriptProcessorNode.connect(this.audioContext.destination);
        
     }
 
     stop(){
-
+        this.scriptProcessorNode.disconnect();
+        this.mediaStreamAudioSourceNode.disconnect();
+        console.log('stop.')
         return new Promise<Blob>( (resolve, reject) => {
             resolve(new Blob());
         })
     }
 
-    addEventListener( animationRecordEventName:AnimationRecordEventName, callback: (animationRecordEvent: AnimationRecordEvent) => void ){
-
+    addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void ): void {
+        this.eventEmit.addListener( animationRecordEventName, callback);
     };
 
-    removeEventListener(animationRecordEventName: AnimationRecordEventName, callback: (animationRecordEvent: AnimationRecordEvent) => void ) {
-
+    removeEventListener<K extends keyof AnimationRecordEvents>(animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void ) {
+        this.eventEmit.removeListener( animationRecordEventName, callback);
     };
 
 
