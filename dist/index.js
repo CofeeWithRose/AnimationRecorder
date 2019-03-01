@@ -37,9 +37,16 @@ import { AnimationRecordError, AnimationRecordErrorName, AnimationRecordEvent } 
 import { EventEmitter } from "./util/events/index";
 var AnimationRecorder = (function () {
     function AnimationRecorder() {
+        var _this = this;
         this.audioContext = new AudioContext();
         this.config = null;
         this.eventEmit = new EventEmitter();
+        this.recordData = new Array();
+        this.audioprocess = function (audioProcessingEvent) {
+            var data = audioProcessingEvent.inputBuffer.getChannelData(0);
+            _this.recordData.push(data);
+            _this.eventEmit.emit('audioprocess', new AnimationRecordEvent('audioprocess', data));
+        };
     }
     AnimationRecorder.prototype.init = function (config, containerElement) {
         this.config = config || { bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' };
@@ -47,23 +54,19 @@ var AnimationRecorder = (function () {
     AnimationRecorder.prototype.start = function () {
         return __awaiter(this, void 0, void 0, function () {
             var _a, bufferSize, numChannels, mediaStream;
-            var _this = this;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
                         _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
                         this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
-                        this.scriptProcessorNode.addEventListener('audioprocess', function (audioProcessingEvent) {
-                            console.log(audioProcessingEvent);
-                            var data = audioProcessingEvent.inputBuffer.getChannelData(0);
-                            _this.eventEmit.emit('audioprocess', new AnimationRecordEvent('audioprocess', data));
-                        });
+                        this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
                         return [4, this.getUserMedia({ audio: true })];
                     case 1:
                         mediaStream = _b.sent();
                         this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
                         this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
                         this.scriptProcessorNode.connect(this.audioContext.destination);
+                        this.eventEmit.emit('start', new AnimationRecordEvent('start', null));
                         return [2];
                 }
             });
@@ -72,10 +75,12 @@ var AnimationRecorder = (function () {
     AnimationRecorder.prototype.stop = function () {
         this.scriptProcessorNode.disconnect();
         this.mediaStreamAudioSourceNode.disconnect();
-        console.log('stop.');
-        return new Promise(function (resolve, reject) {
-            resolve(new Blob());
-        });
+        this.eventEmit.emit('stop', new AnimationRecordEvent('stop', null));
+        var waveBlob = this.encodeWave();
+        this.scriptProcessorNode = null;
+        this.mediaStreamAudioSourceNode = null;
+        this.recordData = new Array();
+        return waveBlob;
     };
     AnimationRecorder.prototype.addEventListener = function (animationRecordEventName, callback) {
         this.eventEmit.addListener(animationRecordEventName, callback);
@@ -87,6 +92,22 @@ var AnimationRecorder = (function () {
     ;
     AnimationRecorder.prototype.throwRecordError = function (error) {
         console.error(error);
+    };
+    AnimationRecorder.prototype.encodeWave = function () {
+        var dataByteLength = this.recordData.length * 16 / 8;
+        var arrayBuffer = new ArrayBuffer(44 + dataByteLength);
+        var dataView = new DataView(arrayBuffer);
+        var offset = 0;
+        offset = this.writeString(dataView, offset, 'RIFF');
+        return new Blob([arrayBuffer], { type: this.config.mimeType });
+    };
+    AnimationRecorder.prototype.writeString = function (dataView, offset, content) {
+        content = content || '';
+        for (var i = 0; i < content.length; i++) {
+            dataView.setUint8(offset, content.charCodeAt(i));
+            offset++;
+        }
+        return offset;
     };
     AnimationRecorder.prototype.getUserMedia = function (constrians) {
         if (navigator.mediaDevices.getUserMedia) {

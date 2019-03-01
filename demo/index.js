@@ -1,9 +1,8 @@
 import { AnimationRecorder } from "../dist/index"
 const recorder = new AnimationRecorder()
 recorder.init();
-recorder.start();
-let isStart = true;
-window.addEventListener('click', ()=> {
+let isStart = false;
+window.addEventListener('click', async ()=> {
     if(isStart){
         recorder.stop();
         isStart = false;
@@ -11,4 +10,13 @@ window.addEventListener('click', ()=> {
         recorder.start();
         isStart = true;
     }
+});
+recorder.addEventListener('start', event =>{
+    console.log(event);
+})
+recorder.addEventListener('stop', event => {
+    console.log(event);
+})
+recorder.addEventListener('audioprocess', event => {
+    console.log(event);
 })

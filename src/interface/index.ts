@@ -1,6 +1,10 @@
 export interface  AnimationRecordEvents{
     
-    "audioprocess":  AnimationRecordEvent<Float32Array>,
+    "audioprocess":  AnimationRecordEvent<Float32Array>;
+
+    "start": AnimationRecordEvent<null>;
+
+    "stop": AnimationRecordEvent<null>;
 
 }
 
@@ -40,7 +44,7 @@ export interface AnimationRecordInterface{
 
     start(): Promise<void>;
 
-    stop(): Promise<Blob>;
+    stop(): Blob;
 
     addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, callback: (event: AnimationRecordEvents[K])=> void ): void;
 
