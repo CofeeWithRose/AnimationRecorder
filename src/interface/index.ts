@@ -5,7 +5,7 @@ export interface  AnimationRecordEvents{
     "start": AnimationRecordEvent<null>;
 
     "stop": AnimationRecordEvent<null>;
-
+    "error": AnimationRecordError;
 }
 
 export class AnimationRecordEvent<Data>{

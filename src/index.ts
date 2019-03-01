@@ -1,5 +1,7 @@
 import { AnimationRecordInterface, AnimationRecordError, AnimationRecordErrorName, AnimationRecordEvent, AnimationRecordEvents } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
+import { WaveAnimationInterface } from "./interface/WaveAnimationInterface";
+import { WaveAnimation } from "./WaveAnimation";
 
 export class AnimationRecorder implements AnimationRecordInterface{
 
@@ -15,27 +17,52 @@ export class AnimationRecorder implements AnimationRecordInterface{
 
     private recordData = new Array<Float32Array>();
 
+    private waveAnimation: WaveAnimationInterface;
+
     init( 
         config?: {bufferSize: number, numChannels: number, mimeType:string},
         containerElement?: HTMLElement
     ){
         this.config = config||{bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav'};
+        if(containerElement ){
+            this.waveAnimation = new WaveAnimation(containerElement);
+            this.startAnim = () => this.waveAnimation.start();
+            this.stopAnim = () => this.waveAnimation.stop();
+        }
+        this.start = this._start;
     }
     
-
     async start(){
-
-        const { bufferSize, numChannels } = this.config;
-        this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
-        this.scriptProcessorNode.addEventListener( 'audioprocess', this.audioprocess );
-        const mediaStream: MediaStream  = await this.getUserMedia({ audio: true});
-        this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(mediaStream);
-        this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
-        this.scriptProcessorNode.connect(this.audioContext.destination);
-        this.eventEmit.emit('start', new AnimationRecordEvent<null>('start', null));
+        throw 'Please execute init method before start.';
     }
 
+    private async _start(){
+
+        try{
+            const { bufferSize, numChannels } = this.config;
+            this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
+            this.scriptProcessorNode.addEventListener( 'audioprocess', this.audioprocess );
+            const mediaStream: MediaStream  = await this.getUserMedia({ audio: true});
+            this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(mediaStream);
+            this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
+            this.scriptProcessorNode.connect(this.audioContext.destination);
+            this.startAnim();
+            this.eventEmit.emit('start', new AnimationRecordEvent<null>('start', null));
+        }catch(error){
+            this.throwRecordError(error);
+        }
+    }
+
+    private startAnim(){
+    }
+    private stopAnim(){
+
+    }
     stop(){
+
+        if( !this.scriptProcessorNode ){
+            return;
+        }
 
         this.scriptProcessorNode.disconnect();
         this.mediaStreamAudioSourceNode.disconnect();
@@ -46,19 +73,25 @@ export class AnimationRecorder implements AnimationRecordInterface{
         this.scriptProcessorNode = null;
         this.mediaStreamAudioSourceNode = null;
         this.recordData = new Array<Float32Array>();
+        this.stopAnim();
         return waveBlob;
     }
 
-    addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void ): void {
+    addEventListener<K extends keyof AnimationRecordEvents>( 
+        animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void 
+    ): void {
         this.eventEmit.addListener( animationRecordEventName, callback);
     };
 
-    removeEventListener<K extends keyof AnimationRecordEvents>(animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void ) {
+    removeEventListener<K extends keyof AnimationRecordEvents>(
+        animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void 
+    ): void {
         this.eventEmit.removeListener( animationRecordEventName, callback);
     };
 
 
     throwRecordError(error:AnimationRecordError){
+        this.eventEmit.emit('error', AnimationRecordError);
         console.error(error);
     }
 
@@ -92,7 +125,9 @@ export class AnimationRecorder implements AnimationRecordInterface{
         if(navigator.mediaDevices.getUserMedia){
             return navigator.mediaDevices.getUserMedia(constrians );
         }else if(navigator.getUserMedia){
-            return new Promise<MediaStream>( (resolve: NavigatorUserMediaSuccessCallback, reject: NavigatorUserMediaErrorCallback) => {
+            return new Promise<MediaStream>( (
+                resolve: NavigatorUserMediaSuccessCallback, reject: NavigatorUserMediaErrorCallback
+            ) => {
                 navigator.getUserMedia(constrians, resolve, reject);
             })
         }else{
