@@ -1,6 +1,6 @@
 import { AnimationRecordInterface, AnimationRecordError, AnimationRecordErrorName, AnimationRecordEvent, AnimationRecordEvents } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
-import { WaveAnimationInterface } from "./interface/WaveAnimationInterface";
+import { WaveAnimationInterface, WaveAnimationConfig } from "./interface/WaveAnimationInterface";
 import { WaveAnimation } from "./WaveAnimation";
 
 export class AnimationRecorder implements AnimationRecordInterface{
@@ -20,14 +20,21 @@ export class AnimationRecorder implements AnimationRecordInterface{
     private waveAnimation: WaveAnimationInterface;
 
     init( 
-        config?: {bufferSize: number, numChannels: number, mimeType:string},
-        containerElement?: HTMLElement
+        config?: {bufferSize: number, numChannels: number, mimeType:string,  waveConfig: WaveAnimationConfig},
+        containerElement?: HTMLElement,
+       
     ){
         this.config = config||{bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav'};
         if(containerElement ){
-            this.waveAnimation = new WaveAnimation(containerElement);
+            this.waveAnimation = new WaveAnimation(containerElement,config.waveConfig);
             this.startAnim = () => this.waveAnimation.start();
             this.stopAnim = () => this.waveAnimation.stop();
+            this.audioprocess = (audioProcessingEvent: AudioProcessingEvent)=> {
+                this.tempAudioprocess(audioProcessingEvent);
+                this.processAnim(audioProcessingEvent);
+            }
+        }else{
+            this.audioprocess = this.tempAudioprocess;
         }
         this.start = this._start;
     }
@@ -114,10 +121,24 @@ export class AnimationRecorder implements AnimationRecordInterface{
         return offset;
     }
 
-    private audioprocess = (audioProcessingEvent: AudioProcessingEvent) => {
+    private tempAudioprocess = (audioProcessingEvent: AudioProcessingEvent) => {
         const data = audioProcessingEvent.inputBuffer.getChannelData(0);
         this.recordData.push(data);
         this.eventEmit.emit('audioprocess', new AnimationRecordEvent<Float32Array>('audioprocess', data));
+    }
+
+    private audioprocess(audioProcessingEvent: AudioProcessingEvent){
+
+    }
+
+    private processAnim = (audioProcessingEvent: AudioProcessingEvent) => {
+        const data = audioProcessingEvent.inputBuffer.getChannelData(0);
+        const step =  Math.floor(data.length * 0.01);
+        let sum = 0;
+        for(let i = 0; i < data.length; i+= step){
+            sum += Math.abs(data[i]);
+        }
+        this.waveAnimation.Volum = sum * 0.01;
     }
     
     private getUserMedia(constrians: MediaStreamConstraints){

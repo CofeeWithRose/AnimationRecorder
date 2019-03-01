@@ -1,6 +1,10 @@
 import { AnimationRecorder } from "../dist/index"
 const recorder = new AnimationRecorder()
-recorder.init(null,document.body);
+recorder.init({
+    waveConfig:{
+        colors:['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)','rgba(255,152,152, 1)']
+    }
+},document.body);
 let isStart = false;
 window.addEventListener('touchend', async ()=> {
     if(isStart){
@@ -24,5 +28,5 @@ recorder.addEventListener('stop', event => {
 })
 recorder.addEventListener('audioprocess', event => {
     // document.body.innerHTML = event.data;
-    console.log(event);
+    // console.log(event);
 })

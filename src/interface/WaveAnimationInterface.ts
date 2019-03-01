@@ -1,5 +1,8 @@
 export interface WaveAnimationConfig{
-    
+
+    colors: Array<string>;
+
+    waveCount: number;
 }
 export interface WaveAnimationInterface {
 
@@ -8,5 +11,6 @@ export interface WaveAnimationInterface {
 
     stop():void;
 
+    Volum:number;
 
 }

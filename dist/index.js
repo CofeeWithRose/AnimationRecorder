@@ -35,6 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { AnimationRecordError, AnimationRecordErrorName, AnimationRecordEvent } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
+import { WaveAnimation } from "./WaveAnimation";
 var AnimationRecorder = (function () {
     function AnimationRecorder() {
         var _this = this;
@@ -42,21 +43,52 @@ var AnimationRecorder = (function () {
         this.config = null;
         this.eventEmit = new EventEmitter();
         this.recordData = new Array();
-        this.audioprocess = function (audioProcessingEvent) {
+        this.tempAudioprocess = function (audioProcessingEvent) {
             var data = audioProcessingEvent.inputBuffer.getChannelData(0);
             _this.recordData.push(data);
             _this.eventEmit.emit('audioprocess', new AnimationRecordEvent('audioprocess', data));
         };
+        this.processAnim = function (audioProcessingEvent) {
+            var data = audioProcessingEvent.inputBuffer.getChannelData(0);
+            var step = Math.floor(data.length * 0.01);
+            var sum = 0;
+            for (var i = 0; i < data.length; i += step) {
+                sum += Math.abs(data[i]);
+            }
+            _this.waveAnimation.Volum = sum * 0.01;
+        };
     }
     AnimationRecorder.prototype.init = function (config, containerElement) {
+        var _this = this;
         this.config = config || { bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' };
+        if (containerElement) {
+            this.waveAnimation = new WaveAnimation(containerElement, config.waveConfig);
+            this.startAnim = function () { return _this.waveAnimation.start(); };
+            this.stopAnim = function () { return _this.waveAnimation.stop(); };
+            this.audioprocess = function (audioProcessingEvent) {
+                _this.tempAudioprocess(audioProcessingEvent);
+                _this.processAnim(audioProcessingEvent);
+            };
+        }
+        else {
+            this.audioprocess = this.tempAudioprocess;
+        }
+        this.start = this._start;
     };
     AnimationRecorder.prototype.start = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, bufferSize, numChannels, mediaStream;
+            return __generator(this, function (_a) {
+                throw 'Please execute init method before start.';
+            });
+        });
+    };
+    AnimationRecorder.prototype._start = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, bufferSize, numChannels, mediaStream, error_1;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        _b.trys.push([0, 2, , 3]);
                         _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
                         this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
                         this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
@@ -66,13 +98,26 @@ var AnimationRecorder = (function () {
                         this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
                         this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
                         this.scriptProcessorNode.connect(this.audioContext.destination);
+                        this.startAnim();
                         this.eventEmit.emit('start', new AnimationRecordEvent('start', null));
-                        return [2];
+                        return [3, 3];
+                    case 2:
+                        error_1 = _b.sent();
+                        this.throwRecordError(error_1);
+                        return [3, 3];
+                    case 3: return [2];
                 }
             });
         });
     };
+    AnimationRecorder.prototype.startAnim = function () {
+    };
+    AnimationRecorder.prototype.stopAnim = function () {
+    };
     AnimationRecorder.prototype.stop = function () {
+        if (!this.scriptProcessorNode) {
+            return;
+        }
         this.scriptProcessorNode.disconnect();
         this.mediaStreamAudioSourceNode.disconnect();
         this.eventEmit.emit('stop', new AnimationRecordEvent('stop', null));
@@ -80,6 +125,7 @@ var AnimationRecorder = (function () {
         this.scriptProcessorNode = null;
         this.mediaStreamAudioSourceNode = null;
         this.recordData = new Array();
+        this.stopAnim();
         return waveBlob;
     };
     AnimationRecorder.prototype.addEventListener = function (animationRecordEventName, callback) {
@@ -91,6 +137,7 @@ var AnimationRecorder = (function () {
     };
     ;
     AnimationRecorder.prototype.throwRecordError = function (error) {
+        this.eventEmit.emit('error', AnimationRecordError);
         console.error(error);
     };
     AnimationRecorder.prototype.encodeWave = function () {
@@ -108,6 +155,8 @@ var AnimationRecorder = (function () {
             offset++;
         }
         return offset;
+    };
+    AnimationRecorder.prototype.audioprocess = function (audioProcessingEvent) {
     };
     AnimationRecorder.prototype.getUserMedia = function (constrians) {
         if (navigator.mediaDevices.getUserMedia) {
