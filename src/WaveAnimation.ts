@@ -17,7 +17,11 @@ export class WaveAnimation implements WaveAnimationInterface{
 
     constructor(container: HTMLElement, config?: WaveAnimationConfig){
         
-        this.config = { colors:[], waveCount: 3, ...config};
+        this.config = { 
+            waveCount: 3, 
+            colors:['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)','rgba(255,152,152, 1)'],
+            ...config
+        };
         this.initCanvas(container);
         this.initWaveInfo(this.config);
         this.start();

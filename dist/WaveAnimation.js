@@ -39,7 +39,7 @@ var WaveAnimation = (function () {
         };
         this.run = function () {
         };
-        this.config = __assign({ colors: [], waveCount: 3 }, config);
+        this.config = __assign({ waveCount: 3, colors: ['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)', 'rgba(255,152,152, 1)'] }, config);
         this.initCanvas(container);
         this.initWaveInfo(this.config);
         this.start();
