@@ -5,7 +5,7 @@ import { WaveAnimation } from "./WaveAnimation";
 
 export class AnimationRecorder implements AnimationRecordInterface{
 
-    private audioContext = new AudioContext();
+    private audioContext: AudioContext;
 
     private config: {bufferSize: number, numChannels: number, mimeType:string} = null;
 
@@ -24,7 +24,7 @@ export class AnimationRecorder implements AnimationRecordInterface{
         containerElement?: HTMLElement,
        
     ){
-        this.config = config||{bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav'};
+        this.config = {bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav', ...config};
         if(containerElement ){
             this.waveAnimation = new WaveAnimation(containerElement,config.waveConfig);
             this.startAnim = () => this.waveAnimation.start();
@@ -46,7 +46,9 @@ export class AnimationRecorder implements AnimationRecordInterface{
     private async _start(){
 
         try{
+            this.audioContext = this.audioContext ||new AudioContext();
             const { bufferSize, numChannels } = this.config;
+            console.log( bufferSize, numChannels, numChannels, this.config );
             this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
             this.scriptProcessorNode.addEventListener( 'audioprocess', this.audioprocess );
             const mediaStream: MediaStream  = await this.getUserMedia({ audio: true});

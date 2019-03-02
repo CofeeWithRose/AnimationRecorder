@@ -6,7 +6,7 @@ recorder.init({
     }
 },document.body);
 let isStart = false;
-window.addEventListener('touchend', async ()=> {
+window.addEventListener('click', async ()=> {
     if(isStart){
         recorder.stop();
         isStart = false;

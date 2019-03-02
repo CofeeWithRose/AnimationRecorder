@@ -1,3 +1,14 @@
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -39,7 +50,6 @@ import { WaveAnimation } from "./WaveAnimation";
 var AnimationRecorder = (function () {
     function AnimationRecorder() {
         var _this = this;
-        this.audioContext = new AudioContext();
         this.config = null;
         this.eventEmit = new EventEmitter();
         this.recordData = new Array();
@@ -60,7 +70,7 @@ var AnimationRecorder = (function () {
     }
     AnimationRecorder.prototype.init = function (config, containerElement) {
         var _this = this;
-        this.config = config || { bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' };
+        this.config = __assign({ bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' }, config);
         if (containerElement) {
             this.waveAnimation = new WaveAnimation(containerElement, config.waveConfig);
             this.startAnim = function () { return _this.waveAnimation.start(); };
@@ -89,7 +99,9 @@ var AnimationRecorder = (function () {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 2, , 3]);
+                        this.audioContext = this.audioContext || new AudioContext();
                         _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
+                        console.log(bufferSize, numChannels, numChannels, this.config);
                         this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
                         this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
                         return [4, this.getUserMedia({ audio: true })];
