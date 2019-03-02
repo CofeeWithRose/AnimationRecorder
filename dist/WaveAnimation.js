@@ -23,6 +23,8 @@ var WaveAnimation = (function () {
         this.waveInfoArray = new Array();
         this.volum = 0.1;
         this.isRunning = false;
+        this.MIN_VOLUM = 0.1;
+        this.lastVolum = this.MIN_VOLUM;
         this.setCanvasSize = function () {
             var containerStyleInfo = getComputedStyle(_this.container);
             _this.width = _this.canvas.width = parseFloat(containerStyleInfo.width);
@@ -30,11 +32,13 @@ var WaveAnimation = (function () {
         };
         this._tempRun = function () {
             _this.context.clearRect(0, 0, _this.width, _this.height);
+            var fixedVolum = _this.lastVolum + (_this.volum - _this.lastVolum) * 0.2;
             for (var i = 0; i < _this.waveInfoArray.length; i++) {
                 var waveInfo = _this.waveInfoArray[i];
-                _this.paintWave(waveInfo.offesetX, waveInfo.color, (i + 1) / _this.waveInfoArray.length);
-                waveInfo.offesetX += Math.PI * 0.05 * _this.volum;
+                _this.paintWave(waveInfo.offesetX, waveInfo.color, (i + 1) / _this.waveInfoArray.length, fixedVolum);
+                waveInfo.offesetX += Math.PI * 0.1 * fixedVolum;
             }
+            _this.lastVolum = fixedVolum;
             requestAnimationFrame(_this.run);
         };
         this.run = function () {
@@ -50,7 +54,7 @@ var WaveAnimation = (function () {
             return this.volum;
         },
         set: function (volum) {
-            this.volum = Math.max(0.1, Math.min(volum * 2, 1));
+            this.volum = Math.max(this.MIN_VOLUM, Math.min(volum * 2, 1));
         },
         enumerable: true,
         configurable: true
@@ -83,16 +87,16 @@ var WaveAnimation = (function () {
         }
     };
     ;
-    WaveAnimation.prototype.paintWave = function (offsetX, color, amplitudeScale) {
+    WaveAnimation.prototype.paintWave = function (offsetX, color, amplitudeScale, volum) {
         this.context.strokeStyle = color || 'black';
         var halfHeight = this.height * 0.5;
         this.context.beginPath();
         this.context.moveTo(0, halfHeight);
         for (var x = 0; x < this.width; x += 2) {
             var proportionX = x / this.width;
-            var theta = 2 * Math.PI * proportionX * 3 * this.volum;
+            var theta = 2 * Math.PI * proportionX * 3;
             var scaleY = 0.5 * Math.sin(Math.PI * proportionX);
-            this.context.lineTo(x, halfHeight * amplitudeScale * this.volum * scaleY * Math.sin(theta + offsetX) + halfHeight);
+            this.context.lineTo(x, halfHeight * amplitudeScale * volum * scaleY * Math.sin(theta + offsetX) + halfHeight);
         }
         this.context.stroke();
     };

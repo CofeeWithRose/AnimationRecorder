@@ -47,12 +47,16 @@ export class WaveAnimation implements WaveAnimationInterface{
 
     private isRunning = false;
 
+    private MIN_VOLUM = 0.1
+
+    private lastVolum = this.MIN_VOLUM;
+
     get Volum() {
         return this.volum
     }
 
     set Volum(volum: number){
-        this.volum = Math.max(0.1,Math.min(volum * 2, 1));
+        this.volum = Math.max(this.MIN_VOLUM,Math.min(volum * 2, 1));
     }
 
     private initCanvas( container: HTMLElement ){
@@ -99,15 +103,17 @@ export class WaveAnimation implements WaveAnimationInterface{
 
     private _tempRun = () => {
         this.context.clearRect(0,0, this.width, this.height);
+        const fixedVolum = this.lastVolum + (this.volum - this.lastVolum) * 0.2;
         for(let i = 0; i < this.waveInfoArray.length; i++){
             const waveInfo = this.waveInfoArray[i];
-            this.paintWave( waveInfo.offesetX, waveInfo.color, (i+1)/this.waveInfoArray.length );
-            waveInfo.offesetX += Math.PI * 0.05 * this.volum;
+            this.paintWave( waveInfo.offesetX, waveInfo.color, (i+1)/this.waveInfoArray.length, fixedVolum  );
+            waveInfo.offesetX += Math.PI * 0.1 * fixedVolum;
         }
+        this.lastVolum = fixedVolum;
         requestAnimationFrame(this.run)
     }
 
-    private paintWave( offsetX: number, color: string, amplitudeScale: number ){
+    private paintWave( offsetX: number, color: string, amplitudeScale: number, volum: number ){
         
         this.context.strokeStyle = color || 'black';
         const halfHeight = this.height * 0.5;
@@ -115,9 +121,9 @@ export class WaveAnimation implements WaveAnimationInterface{
         this.context.moveTo(0, halfHeight);
         for( let x = 0; x < this.width; x+=2 ){
             const proportionX = x/this.width;
-            const theta = 2 * Math.PI * proportionX * 3 * this.volum;
+            const theta = 2 * Math.PI * proportionX * 3;
             const scaleY = 0.5 * Math.sin(Math.PI * proportionX);
-            this.context.lineTo( x, halfHeight * amplitudeScale * this.volum * scaleY * Math.sin( theta + offsetX ) + halfHeight );
+            this.context.lineTo( x, halfHeight * amplitudeScale * volum * scaleY * Math.sin( theta + offsetX ) + halfHeight );
         }
         this.context.stroke();
     }
