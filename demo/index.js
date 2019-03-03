@@ -6,7 +6,7 @@ recorder.init({
     }
 },document.body);
 let isStart = false;
-window.addEventListener('click', async ()=> {
+window.addEventListener('touchend', async ()=> {
     if(isStart){
         recorder.stop();
         isStart = false;
@@ -15,9 +15,11 @@ window.addEventListener('click', async ()=> {
         isStart = true;
     }
 });
+// AudioContext = null;
+// alert(webkitAudioContext );
 
 recorder.addEventListener('error', event => {
-    console.log(event);
+    alert(event);
 })
 
 recorder.addEventListener('start', event =>{

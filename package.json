@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/koa": "^2.0.48",
     "koa-sslify": "^4.0.3",
+    "koa-static-cache": "^5.1.2",
     "typescript": "^3.3.3333"
   },
   "dependencies": {

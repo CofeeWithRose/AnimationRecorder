@@ -14,20 +14,24 @@ export interface RecordEvents{
 
 export class RecordError{
 
-    constructor(name: RecordErrorName, message: string ){
+    constructor(name: RecordErrorName, message: RecordErrorMessage ){
         this.name = name;
         this.message = message;
     }
 
     name: RecordErrorName;
     
-    message: string;
+    message: RecordErrorMessage;
 }
 
 export enum RecordErrorName{
 
     NOT_SUPPORT_ERROR = 'NOT_SUPPORT_ERROR',
 
+}
+export enum RecordErrorMessage{
+
+    NOT_SUPPORT_ERROR = 'your browser is not support record.',
 }
 
 export class RecordEvent<Data>{

@@ -46,7 +46,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { AnimationRecordError } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
-import { RecordEvent, RecordErrorName } from "./interface/RecorderInterface";
+import { RecordEvent, RecordErrorName, RecordError, RecordErrorMessage } from "./interface/RecorderInterface";
 var Recorder = (function () {
     function Recorder() {
         var _this = this;
@@ -76,7 +76,7 @@ var Recorder = (function () {
                 switch (_b.label) {
                     case 0:
                         _b.trys.push([0, 2, , 3]);
-                        this.audioContext = this.audioContext || new AudioContext();
+                        this.audioContext = this.audioContext || this.createAudioContext();
                         _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
                         this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
                         this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
@@ -96,6 +96,17 @@ var Recorder = (function () {
                 }
             });
         });
+    };
+    Recorder.prototype.createAudioContext = function () {
+        if (window.AudioContext) {
+            return new AudioContext();
+        }
+        else if (window.webkitAudioContext) {
+            return new webkitAudioContext();
+        }
+        else {
+            throw new RecordError(RecordErrorName.NOT_SUPPORT_ERROR, RecordErrorMessage.NOT_SUPPORT_ERROR);
+        }
     };
     Recorder.prototype.stop = function () {
         if (!this.scriptProcessorNode) {
@@ -119,7 +130,7 @@ var Recorder = (function () {
     };
     ;
     Recorder.prototype.throwRecordError = function (error) {
-        this.eventEmit.emit('error', AnimationRecordError);
+        this.eventEmit.emit('error', error);
         console.error(error);
     };
     Recorder.prototype.encodeWave = function () {
@@ -148,7 +159,7 @@ var Recorder = (function () {
             });
         }
         else {
-            this.throwRecordError(new AnimationRecordError(RecordErrorName.NOT_SUPPORT_ERROR, 'your browser is not support record.'));
+            this.throwRecordError(new AnimationRecordError(RecordErrorName.NOT_SUPPORT_ERROR, RecordErrorMessage.NOT_SUPPORT_ERROR));
         }
     };
     Recorder.prototype.destroy = function () {

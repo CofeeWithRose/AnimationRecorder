@@ -1,7 +1,6 @@
 import {  AnimationRecordError, AnimationRecordEvents } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
-import { RecordEvent, RecordErrorName, RecorderInterface, RcorderConfig } from "./interface/RecorderInterface";
-
+import { RecordEvent, RecordErrorName, RecorderInterface, RcorderConfig, RecordError, RecordErrorMessage } from "./interface/RecorderInterface";
 
 
 export class Recorder implements RecorderInterface {
@@ -32,7 +31,7 @@ export class Recorder implements RecorderInterface {
     private async _start(){
 
         try{
-            this.audioContext = this.audioContext ||new AudioContext();
+            this.audioContext = this.audioContext ||this.createAudioContext();
             const { bufferSize, numChannels } = this.config;
             this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
             this.scriptProcessorNode.addEventListener( 'audioprocess', this.audioprocess );
@@ -46,6 +45,16 @@ export class Recorder implements RecorderInterface {
         }
     }
 
+    private createAudioContext(){
+        if(AudioContext){
+            alert('cccc')
+            return new AudioContext();
+        }else if (webkitAudioContext){
+            return new webkitAudioContext();
+        }else{
+            throw new RecordError(RecordErrorName.NOT_SUPPORT_ERROR, RecordErrorMessage.NOT_SUPPORT_ERROR);
+        }
+    }
     stop(){
 
         if( !this.scriptProcessorNode ){
@@ -77,8 +86,8 @@ export class Recorder implements RecorderInterface {
     };
 
 
-    throwRecordError(error:AnimationRecordError){
-        this.eventEmit.emit('error', AnimationRecordError);
+    throwRecordError(error: RecordError){
+        this.eventEmit.emit('error', error);
         console.error(error);
     }
 
@@ -121,7 +130,7 @@ export class Recorder implements RecorderInterface {
         }else{
             this.throwRecordError(new AnimationRecordError(
                 RecordErrorName.NOT_SUPPORT_ERROR,
-                'your browser is not support record.'
+                RecordErrorMessage.NOT_SUPPORT_ERROR,
             ));
         }
         

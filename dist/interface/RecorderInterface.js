@@ -10,6 +10,10 @@ export var RecordErrorName;
 (function (RecordErrorName) {
     RecordErrorName["NOT_SUPPORT_ERROR"] = "NOT_SUPPORT_ERROR";
 })(RecordErrorName || (RecordErrorName = {}));
+export var RecordErrorMessage;
+(function (RecordErrorMessage) {
+    RecordErrorMessage["NOT_SUPPORT_ERROR"] = "your browser is not support record.";
+})(RecordErrorMessage || (RecordErrorMessage = {}));
 var RecordEvent = (function () {
     function RecordEvent(eventName, data) {
         this.eventName = eventName;

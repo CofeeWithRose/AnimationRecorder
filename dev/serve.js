@@ -14,7 +14,10 @@ const options = {
 
 app.use(enforceHttps());
 
-app.use( KoaStatic(Path.resolve(__dirname,'../'),{defer: true, }) );
+app.use( KoaStatic(Path.resolve(__dirname,'../'),{
+    defer: true, 
+    cacheControl: "nocache",
+}) );
 app.use( (context, next) => {
     const url = context.request.url || '';
     if(/\/[^\.|\/]+$/.test(url)){
