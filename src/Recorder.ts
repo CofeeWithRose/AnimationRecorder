@@ -46,10 +46,11 @@ export class Recorder implements RecorderInterface {
     }
 
     private createAudioContext(){
-        if((<any>window).AudioContext){
+        if(AudioContext){
+            alert('cccc')
             return new AudioContext();
-        }else if ((<any>window).webkitAudioContext){
-            return new (<any>window).webkitAudioContext();
+        }else if (webkitAudioContext){
+            return new webkitAudioContext();
         }else{
             throw new RecordError(RecordErrorName.NOT_SUPPORT_ERROR, RecordErrorMessage.NOT_SUPPORT_ERROR);
         }
