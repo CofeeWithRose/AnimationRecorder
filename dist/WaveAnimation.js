@@ -69,6 +69,7 @@ var WaveAnimation = (function () {
         this.context = this.canvas.getContext('2d');
         this.setCanvasSize();
         container.appendChild(this.canvas);
+        window.addEventListener('resize', this.setCanvasSize);
     };
     WaveAnimation.prototype.initWaveInfo = function (config) {
         for (var i = 0; i < config.waveCount; i++) {
@@ -76,7 +77,6 @@ var WaveAnimation = (function () {
         }
     };
     WaveAnimation.prototype.start = function () {
-        window.addEventListener('resize', this.setCanvasSize);
         if (!this.isRunning) {
             this.run = this._tempRun;
             this.run();
@@ -84,13 +84,15 @@ var WaveAnimation = (function () {
         }
     };
     WaveAnimation.prototype.stop = function () {
-        window.removeEventListener('resize', this.setCanvasSize);
         if (this.isRunning) {
             this.run = function () { };
             this.isRunning = false;
         }
     };
     ;
+    WaveAnimation.prototype.destroy = function () {
+        window.removeEventListener('resize', this.setCanvasSize);
+    };
     WaveAnimation.prototype.paintWave = function (offsetX, color, amplitudeScale, volum) {
         this.context.strokeStyle = color || 'black';
         this.context.lineWidth = this.config.lineWidth;

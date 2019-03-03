@@ -47,19 +47,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import { AnimationRecordError } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
 import { RecordEvent, RecordErrorName } from "./interface/RecorderInterface";
-var RcorderConfig = (function () {
-    function RcorderConfig(bufferSize, numChannels, mimeType) {
-        this.bufferSize = bufferSize;
-        this.numChannels = numChannels;
-        this.mimeType = mimeType;
-    }
-    return RcorderConfig;
-}());
-export { RcorderConfig };
 var Recorder = (function () {
     function Recorder() {
         var _this = this;
-        this.config = null;
         this.eventEmit = new EventEmitter();
         this.recordData = new Array();
         this.audioprocess = function (audioProcessingEvent) {

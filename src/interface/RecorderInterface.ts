@@ -42,6 +42,19 @@ export class RecordEvent<Data>{
     data: Data;
 }
 
+export interface RcorderConfig {
+    
+    // constructor(bufferSize: number, numChannels: number, mimeType: string){
+    //     this.bufferSize = bufferSize;
+    //     this.numChannels = numChannels;
+    //     this.mimeType = mimeType;
+    // }
+
+    bufferSize?: number;
+    numChannels?: number;
+    mimeType?:string;
+}
+
 export interface RecorderInterface {
 
     init():void;

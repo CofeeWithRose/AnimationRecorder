@@ -1,21 +1,8 @@
-import { AnimationRecordInterface, AnimationRecordError, AnimationRecordEvents } from "./interface/index";
+import {  AnimationRecordError, AnimationRecordEvents } from "./interface/index";
 import { EventEmitter } from "./util/events/index";
-import { WaveAnimationInterface, WaveAnimationConfig } from "./interface/WaveAnimationInterface";
-import { WaveAnimation } from "./WaveAnimation";
-import { RecordEvent, RecordErrorName, RecorderInterface } from "./interface/RecorderInterface";
+import { RecordEvent, RecordErrorName, RecorderInterface, RcorderConfig } from "./interface/RecorderInterface";
 
-export class RcorderConfig {
-    
-    constructor(bufferSize: number, numChannels: number, mimeType: string){
-        this.bufferSize = bufferSize;
-        this.numChannels = numChannels;
-        this.mimeType = mimeType;
-    }
 
-    bufferSize: number;
-    numChannels: number;
-    mimeType:string;
-}
 
 export class Recorder implements RecorderInterface {
 
@@ -31,21 +18,10 @@ export class Recorder implements RecorderInterface {
 
     private recordData = new Array<Float32Array>();
 
-    // private waveAnimation: WaveAnimationInterface;
 
     init( config?: RcorderConfig ){
         this.config = {bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav', ...config};
-        // if(containerElement ){
-        //     this.waveAnimation = new WaveAnimation(containerElement,config.waveConfig);
-        //     this.startAnim = () => this.waveAnimation.start();
-        //     this.stopAnim = () => this.waveAnimation.stop();
-        //     this.audioprocess = (audioProcessingEvent: AudioProcessingEvent)=> {
-        //         this.tempAudioprocess(audioProcessingEvent);
-        //         this.processAnim(audioProcessingEvent);
-        //     }
-        // }else{
-        //     this.audioprocess = this.tempAudioprocess;
-        // }
+     
         this.start = this._start;
     }
     
@@ -131,19 +107,6 @@ export class Recorder implements RecorderInterface {
         this.eventEmit.emit('audioprocess', new RecordEvent<Float32Array>('audioprocess', data));
     }
 
-    // private audioprocess(audioProcessingEvent: AudioProcessingEvent){
-
-    // }
-
-    // private processAnim = (audioProcessingEvent: AudioProcessingEvent) => {
-    //     const data = audioProcessingEvent.inputBuffer.getChannelData(0);
-    //     const step =  Math.floor(data.length * 0.01);
-    //     let sum = 0;
-    //     for(let i = 0; i < data.length; i+= step){
-    //         sum += Math.abs(data[i]);
-    //     }
-    //     this.waveAnimation.Volum = sum * 0.01;
-    // }
     
     private getUserMedia(constrians: MediaStreamConstraints){
         

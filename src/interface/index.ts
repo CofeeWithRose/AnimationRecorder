@@ -1,4 +1,5 @@
-import { RecordEvents, RecordError, RecordErrorName } from "./RecorderInterface";
+import { RecordEvents, RecordError, RecordErrorName, RcorderConfig } from "./RecorderInterface";
+import { WaveAnimationConfig } from "./WaveAnimationInterface";
 
 export interface  AnimationRecordEvents extends RecordEvents{
     
@@ -10,11 +11,15 @@ export class AnimationRecordError extends RecordError{
 
 }
 
+export interface AnimationRecordConfig extends RcorderConfig {
+
+    waveAnimationConfig?: WaveAnimationConfig;
+
+}
 
 export interface AnimationRecordInterface{
-    
-    init(  config?: {bufferSize: number, numChannels: number, mimeType: string},
-    containerElement?: HTMLElement): void;
+
+    init(  config?: AnimationRecordConfig, containerElement?: HTMLElement): void;
 
     start(): Promise<void>;
 
