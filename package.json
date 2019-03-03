@@ -19,6 +19,7 @@
   "homepage": "https://github.com/CofeeWithRose/AnimationRecorder#readme",
   "devDependencies": {
     "@types/koa": "^2.0.48",
+    "koa-sslify": "^4.0.3",
     "typescript": "^3.3.3333"
   },
   "dependencies": {

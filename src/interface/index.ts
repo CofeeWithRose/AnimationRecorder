@@ -27,9 +27,9 @@ export interface AnimationRecordInterface{
 
     destroy(): void;
 
-    addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, callback: (event: AnimationRecordEvents[K])=> void ): void;
+    addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, listener: (event: AnimationRecordEvents[K])=> void ): void;
 
-    removeEventListener<K extends keyof AnimationRecordEvents>(animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void ): void;
+    removeEventListener<K extends keyof AnimationRecordEvents>(animationRecordEventName: K, listener: (event: AnimationRecordEvents[K]) => void ): void;
 
     throwRecordError(animationRecordError: AnimationRecordError): void;
     

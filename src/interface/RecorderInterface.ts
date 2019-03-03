@@ -44,12 +44,6 @@ export class RecordEvent<Data>{
 
 export interface RcorderConfig {
     
-    // constructor(bufferSize: number, numChannels: number, mimeType: string){
-    //     this.bufferSize = bufferSize;
-    //     this.numChannels = numChannels;
-    //     this.mimeType = mimeType;
-    // }
-
     bufferSize?: number;
     numChannels?: number;
     mimeType?:string;
@@ -65,8 +59,8 @@ export interface RecorderInterface {
 
     destroy(): void;
 
-    addEventListener<K extends keyof RecordEvents>( animationRecordEventName: K, callback: (event: RecordEvents[K])=> void ): void;
+    addEventListener<K extends keyof RecordEvents>( animationRecordEventName: K, listener: (event: RecordEvents[K])=> void ): void;
 
-    removeEventListener<K extends keyof RecordEvents>(animationRecordEventName: K, callback: (event: RecordEvents[K]) => void ): void;
+    removeEventListener<K extends keyof RecordEvents>(animationRecordEventName: K, listener: (event: RecordEvents[K]) => void ): void;
 
 }
