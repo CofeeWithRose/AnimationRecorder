@@ -2,6 +2,7 @@ import { AnimationRecordInterface, AnimationRecordError, AnimationRecordEvents, 
 import { WaveAnimationInterface } from "./interface/WaveAnimationInterface";
 import { WaveAnimation } from "./WaveAnimation";
 import { Recorder } from "./Recorder";
+import { RecordEvent } from "./interface/RecorderInterface";
 
 export class AnimationRecorder implements AnimationRecordInterface{
 
@@ -16,8 +17,18 @@ export class AnimationRecorder implements AnimationRecordInterface{
 
         this.config = config || {};
         this.recorder.init(config);
+  
         if( containerElement){
             this.animation = new WaveAnimation(containerElement, this.config.waveAnimationConfig);
+            this.recorder.addEventListener('audioprocess',( event:RecordEvent<Float32Array> ) => {
+                let sum = 0;
+                const data = event.data;
+                const step = Math.floor( data.length * 0.01 );
+                for(let i = 0; i < data.length; i+= step){
+                    sum += Math.abs(data[i]);
+                }
+                this.animation.Volum = sum * 0.01;
+            });
             this.start = async ()=> {
                 const promise = await this.tempStart();
                 this.animation.start();

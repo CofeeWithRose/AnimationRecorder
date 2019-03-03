@@ -36,7 +36,7 @@ var WaveAnimation = (function () {
             for (var i = 0; i < _this.waveInfoArray.length; i++) {
                 var waveInfo = _this.waveInfoArray[i];
                 _this.paintWave(waveInfo.offesetX, waveInfo.color, (i + 1) / _this.waveInfoArray.length, fixedVolum);
-                waveInfo.offesetX += Math.PI * 0.1 * fixedVolum;
+                waveInfo.offesetX += Math.PI * (0.05 + 0.05 * fixedVolum);
             }
             _this.lastVolum = fixedVolum;
             requestAnimationFrame(_this.run);
@@ -58,7 +58,7 @@ var WaveAnimation = (function () {
             return this.volum;
         },
         set: function (volum) {
-            this.volum = Math.max(this.MIN_VOLUM, Math.min(volum * 2 + this.MIN_VOLUM, 1));
+            this.volum = Math.max(this.MIN_VOLUM, Math.min(volum * 3 + this.MIN_VOLUM, 1));
         },
         enumerable: true,
         configurable: true

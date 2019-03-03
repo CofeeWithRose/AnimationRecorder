@@ -45,6 +45,15 @@ var AnimationRecorder = (function () {
         this.recorder.init(config);
         if (containerElement) {
             this.animation = new WaveAnimation(containerElement, this.config.waveAnimationConfig);
+            this.recorder.addEventListener('audioprocess', function (event) {
+                var sum = 0;
+                var data = event.data;
+                var step = Math.floor(data.length * 0.01);
+                for (var i = 0; i < data.length; i += step) {
+                    sum += Math.abs(data[i]);
+                }
+                _this.animation.Volum = sum * 0.01;
+            });
             this.start = function () { return __awaiter(_this, void 0, void 0, function () {
                 var promise;
                 return __generator(this, function (_a) {

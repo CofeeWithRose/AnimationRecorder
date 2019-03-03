@@ -62,7 +62,7 @@ export class WaveAnimation implements WaveAnimationInterface{
     }
 
     set Volum(volum: number){
-        this.volum = Math.max(this.MIN_VOLUM,Math.min(volum * 2+this.MIN_VOLUM, 1));
+        this.volum = Math.max(this.MIN_VOLUM,Math.min(volum * 3+this.MIN_VOLUM, 1));
     }
 
     private initCanvas( container: HTMLElement ){
@@ -120,7 +120,7 @@ export class WaveAnimation implements WaveAnimationInterface{
         for(let i = 0; i < this.waveInfoArray.length; i++){
             const waveInfo = this.waveInfoArray[i];
             this.paintWave( waveInfo.offesetX, waveInfo.color, (i+1)/this.waveInfoArray.length, fixedVolum  );
-            waveInfo.offesetX += Math.PI * 0.1 * fixedVolum;
+            waveInfo.offesetX += Math.PI * ( 0.05 + 0.05 * fixedVolum );
         }
         this.lastVolum = fixedVolum;
         requestAnimationFrame(this.run)
