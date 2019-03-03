@@ -2,7 +2,7 @@ import { AnimationRecorder } from "../dist/index"
 const recorder = new AnimationRecorder()
 recorder.init({
     waveConfig:{
-        colors:['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)','rgba(255,152,152, 1)']
+        // colors:['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)','rgba(255,152,152, 1)']
     }
 },document.body);
 let isStart = false;

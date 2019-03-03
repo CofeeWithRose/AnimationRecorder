@@ -21,9 +21,9 @@ var WaveAnimation = (function () {
     function WaveAnimation(container, config) {
         var _this = this;
         this.waveInfoArray = new Array();
-        this.volum = 0.1;
         this.isRunning = false;
         this.MIN_VOLUM = 0.1;
+        this.volum = this.MIN_VOLUM;
         this.lastVolum = this.MIN_VOLUM;
         this.setCanvasSize = function () {
             var containerStyleInfo = getComputedStyle(_this.container);
@@ -43,7 +43,11 @@ var WaveAnimation = (function () {
         };
         this.run = function () {
         };
-        this.config = __assign({ waveCount: 3, colors: ['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)', 'rgba(255,152,152, 1)'] }, config);
+        this.config = __assign({ lineWidth: 2, waveCount: 3, colors: [
+                'rgba(255,152,152, 0.2)',
+                'rgba(255,152,152, 0.5)',
+                'rgba(255,152,152, 1)',
+            ] }, config);
         this.initCanvas(container);
         this.initWaveInfo(this.config);
         this.start();
@@ -54,7 +58,7 @@ var WaveAnimation = (function () {
             return this.volum;
         },
         set: function (volum) {
-            this.volum = Math.max(this.MIN_VOLUM, Math.min(volum * 2, 1));
+            this.volum = Math.max(this.MIN_VOLUM, Math.min(volum * 2 + this.MIN_VOLUM, 1));
         },
         enumerable: true,
         configurable: true
@@ -89,6 +93,7 @@ var WaveAnimation = (function () {
     ;
     WaveAnimation.prototype.paintWave = function (offsetX, color, amplitudeScale, volum) {
         this.context.strokeStyle = color || 'black';
+        this.context.lineWidth = this.config.lineWidth;
         var halfHeight = this.height * 0.5;
         this.context.beginPath();
         this.context.moveTo(0, halfHeight);

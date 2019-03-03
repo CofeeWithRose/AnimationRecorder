@@ -1,41 +1,15 @@
-export interface  AnimationRecordEvents{
+import { RecordEvents, RecordError, RecordErrorName } from "./RecorderInterface";
+
+export interface  AnimationRecordEvents extends RecordEvents{
     
-    "audioprocess":  AnimationRecordEvent<Float32Array>;
-
-    "start": AnimationRecordEvent<null>;
-
-    "stop": AnimationRecordEvent<null>;
-    "error": AnimationRecordError;
+   
 }
 
-export class AnimationRecordEvent<Data>{
 
-    constructor(eventName: string, data: Data){
-        this.eventName = eventName;
-        this.data = data;
-    }
-    
-    eventName: string;
-
-    data: Data;
-}
-
-export enum AnimationRecordErrorName{
-
-    NOT_SUPPORT_ERROR = 'NOT_SUPPORT_ERROR',
+export class AnimationRecordError extends RecordError{
 
 }
-export class AnimationRecordError{
 
-    constructor(name: AnimationRecordErrorName, message: string ){
-        this.name = name;
-        this.message = message;
-    }
-
-    name: AnimationRecordErrorName;
-    
-    message: string;
-}
 
 export interface AnimationRecordInterface{
     
@@ -45,6 +19,8 @@ export interface AnimationRecordInterface{
     start(): Promise<void>;
 
     stop(): Blob;
+
+    destroy(): void;
 
     addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, callback: (event: AnimationRecordEvents[K])=> void ): void;
 

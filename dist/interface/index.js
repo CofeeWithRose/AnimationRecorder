@@ -1,21 +1,23 @@
-var AnimationRecordEvent = (function () {
-    function AnimationRecordEvent(eventName, data) {
-        this.eventName = eventName;
-        this.data = data;
-    }
-    return AnimationRecordEvent;
-}());
-export { AnimationRecordEvent };
-export var AnimationRecordErrorName;
-(function (AnimationRecordErrorName) {
-    AnimationRecordErrorName["NOT_SUPPORT_ERROR"] = "NOT_SUPPORT_ERROR";
-})(AnimationRecordErrorName || (AnimationRecordErrorName = {}));
-var AnimationRecordError = (function () {
-    function AnimationRecordError(name, message) {
-        this.name = name;
-        this.message = message;
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+import { RecordError } from "./RecorderInterface";
+var AnimationRecordError = (function (_super) {
+    __extends(AnimationRecordError, _super);
+    function AnimationRecordError() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
     return AnimationRecordError;
-}());
+}(RecordError));
 export { AnimationRecordError };
 //# sourceMappingURL=index.js.map

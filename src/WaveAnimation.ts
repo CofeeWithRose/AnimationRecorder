@@ -18,8 +18,13 @@ export class WaveAnimation implements WaveAnimationInterface{
     constructor(container: HTMLElement, config?: WaveAnimationConfig){
         
         this.config = { 
+            lineWidth: 2,
             waveCount: 3, 
-            colors:['rgba(255,152,152, 0.2)', 'rgba(255,152,152, 0.5)','rgba(255,152,152, 1)'],
+            colors:[
+                'rgba(255,152,152, 0.2)',
+                'rgba(255,152,152, 0.5)',
+                'rgba(255,152,152, 1)',
+            ],
             ...config
         };
         this.initCanvas(container);
@@ -43,11 +48,12 @@ export class WaveAnimation implements WaveAnimationInterface{
 
     private waveInfoArray = new Array<WaveAnimInfo>();
 
-    private volum = 0.1;
-
     private isRunning = false;
 
-    private MIN_VOLUM = 0.1
+    private MIN_VOLUM = 0.1;
+
+    private volum = this.MIN_VOLUM;
+
 
     private lastVolum = this.MIN_VOLUM;
 
@@ -56,15 +62,17 @@ export class WaveAnimation implements WaveAnimationInterface{
     }
 
     set Volum(volum: number){
-        this.volum = Math.max(this.MIN_VOLUM,Math.min(volum * 2, 1));
+        this.volum = Math.max(this.MIN_VOLUM,Math.min(volum * 2+this.MIN_VOLUM, 1));
     }
 
     private initCanvas( container: HTMLElement ){
+
         this.container = container;
         this.canvas = document.createElement('canvas');
         this.context = this.canvas.getContext('2d');
         this.setCanvasSize();
         container.appendChild(this.canvas);
+        window.addEventListener('resize', this.setCanvasSize );
         
     }
 
@@ -85,8 +93,8 @@ export class WaveAnimation implements WaveAnimationInterface{
 
     
     start(){
-        window.addEventListener('resize', this.setCanvasSize );
-        if(! this.isRunning){
+
+        if( !this.isRunning){
             this.run = this._tempRun;
             this.run();
             this.isRunning = true;
@@ -94,12 +102,17 @@ export class WaveAnimation implements WaveAnimationInterface{
     }
 
     stop(){
-        window.removeEventListener('resize', this.setCanvasSize );
+
         if( this.isRunning){
             this.run =() => {};
             this.isRunning = false;
         }
     };
+
+    destroy(){
+
+        window.removeEventListener( 'resize', this.setCanvasSize );
+    }
 
     private _tempRun = () => {
         this.context.clearRect(0,0, this.width, this.height);
@@ -116,6 +129,7 @@ export class WaveAnimation implements WaveAnimationInterface{
     private paintWave( offsetX: number, color: string, amplitudeScale: number, volum: number ){
         
         this.context.strokeStyle = color || 'black';
+        this.context.lineWidth = this.config.lineWidth;
         const halfHeight = this.height * 0.5;
         this.context.beginPath();
         this.context.moveTo(0, halfHeight);
