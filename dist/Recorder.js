@@ -52,6 +52,7 @@ var Recorder = (function () {
         var _this = this;
         this.eventEmit = new EventEmitter();
         this.recordData = new Array();
+        this.state = 'suspended';
         this.audioprocess = function (audioProcessingEvent) {
             var data = audioProcessingEvent.inputBuffer.getChannelData(0);
             _this.recordData.push(data);
@@ -60,40 +61,52 @@ var Recorder = (function () {
     }
     Recorder.prototype.init = function (config) {
         this.config = __assign({ bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav' }, config);
-        this.start = this._start;
     };
     Recorder.prototype.start = function () {
         return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
             return __generator(this, function (_a) {
-                throw 'Please execute init method before start.';
-            });
-        });
-    };
-    Recorder.prototype._start = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var _a, bufferSize, numChannels, mediaStream, error_1;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        _b.trys.push([0, 2, , 3]);
-                        this.audioContext = this.audioContext || this.createAudioContext();
-                        _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
-                        this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
-                        this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
-                        return [4, this.getUserMedia({ audio: true })];
-                    case 1:
-                        mediaStream = _b.sent();
-                        this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
-                        this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
-                        this.scriptProcessorNode.connect(this.audioContext.destination);
-                        this.eventEmit.emit('start', new RecordEvent('start', null));
-                        return [3, 3];
-                    case 2:
-                        error_1 = _b.sent();
-                        this.throwRecordError(error_1);
-                        return [3, 3];
-                    case 3: return [2];
+                if (!this.config) {
+                    throw 'Please execute init method before start.';
                 }
+                else {
+                    this.start = function () { return __awaiter(_this, void 0, void 0, function () {
+                        var _a, bufferSize, numChannels, mediaStream, error_1;
+                        var _this = this;
+                        return __generator(this, function (_b) {
+                            switch (_b.label) {
+                                case 0:
+                                    if (!('suspended' === this.state)) return [3, 4];
+                                    _b.label = 1;
+                                case 1:
+                                    _b.trys.push([1, 3, , 4]);
+                                    this.audioContext = this.audioContext || this.createAudioContext();
+                                    this.audioContext.resume();
+                                    this.audioContext.onstatechange = function (event) {
+                                        _this.state = event.target.state;
+                                        _this.eventEmit.emit('statechange', new RecordEvent('statechange', _this.state));
+                                    };
+                                    _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
+                                    this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
+                                    this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
+                                    return [4, this.getUserMedia({ audio: true })];
+                                case 2:
+                                    mediaStream = _b.sent();
+                                    this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
+                                    this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
+                                    this.scriptProcessorNode.connect(this.audioContext.destination);
+                                    return [3, 4];
+                                case 3:
+                                    error_1 = _b.sent();
+                                    this.throwRecordError(error_1);
+                                    return [3, 4];
+                                case 4: return [2];
+                            }
+                        });
+                    }); };
+                    return [2, this.start()];
+                }
+                return [2];
             });
         });
     };
@@ -109,17 +122,16 @@ var Recorder = (function () {
         }
     };
     Recorder.prototype.stop = function () {
-        if (!this.scriptProcessorNode) {
-            return;
+        if ('running' === this.state) {
+            this.scriptProcessorNode.disconnect();
+            this.mediaStreamAudioSourceNode.disconnect();
+            this.audioContext.suspend();
+            var waveBlob = this.encodeWave();
+            this.scriptProcessorNode = null;
+            this.mediaStreamAudioSourceNode = null;
+            this.recordData = new Array();
+            return waveBlob;
         }
-        this.scriptProcessorNode.disconnect();
-        this.mediaStreamAudioSourceNode.disconnect();
-        this.eventEmit.emit('stop', new RecordEvent('stop', null));
-        var waveBlob = this.encodeWave();
-        this.scriptProcessorNode = null;
-        this.mediaStreamAudioSourceNode = null;
-        this.recordData = new Array();
-        return waveBlob;
     };
     Recorder.prototype.addEventListener = function (animationRecordEventName, callback) {
         this.eventEmit.addListener(animationRecordEventName, callback);
@@ -163,6 +175,7 @@ var Recorder = (function () {
         }
     };
     Recorder.prototype.destroy = function () {
+        this.audioContext.close();
         this.eventEmit.emit('destroy', new RecordEvent('destroy', null));
     };
     return Recorder;

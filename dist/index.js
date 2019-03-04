@@ -54,51 +54,58 @@ var AnimationRecorder = (function () {
                 }
                 _this.animation.Volum = sum * 0.01;
             });
-            this.start = function () { return __awaiter(_this, void 0, void 0, function () {
-                var promise;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0: return [4, this.tempStart()];
-                        case 1:
-                            promise = _a.sent();
-                            this.animation.start();
-                            return [2, promise];
-                    }
-                });
-            }); };
+        }
+    };
+    AnimationRecorder.prototype.start = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                if (!this.config) {
+                    throw 'Please execute init method before start';
+                }
+                else if (this.animation) {
+                    this.start = function () { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    this.animation.start();
+                                    return [4, this.recorder.start()];
+                                case 1: return [2, _a.sent()];
+                            }
+                        });
+                    }); };
+                }
+                else {
+                    this.start = function () { return __awaiter(_this, void 0, void 0, function () {
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4, this.recorder.start()];
+                                case 1: return [2, _a.sent()];
+                            }
+                        });
+                    }); };
+                }
+                return [2, this.start()];
+            });
+        });
+    };
+    AnimationRecorder.prototype.stop = function () {
+        var _this = this;
+        if (!this.config) {
+            throw 'Please execute init method before stop';
+        }
+        else if (this.animation) {
             this.stop = function () {
                 _this.animation.stop();
                 return _this.recorder.stop();
             };
-            this.destroy = function () {
-                _this.animation.destroy();
-                _this.recorder.destroy();
-            };
         }
         else {
-            this.start = this.tempStart;
-            this.stop = this.tempStop;
-            this.destroy = this.tempDestroy;
+            this.stop = function () {
+                return _this.recorder.stop();
+            };
         }
-    };
-    AnimationRecorder.prototype.tempStart = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4, this.recorder.start()];
-                    case 1: return [2, _a.sent()];
-                }
-            });
-        });
-    };
-    AnimationRecorder.prototype.start = function () {
-        throw 'Please execute init method before start';
-    };
-    AnimationRecorder.prototype.tempStop = function () {
-        return this.recorder.stop();
-    };
-    AnimationRecorder.prototype.stop = function () {
-        throw 'Please execute init method before stop';
+        return this.stop();
     };
     AnimationRecorder.prototype.addEventListener = function (animationRecordEventName, listener) {
         this.recorder.addEventListener(animationRecordEventName, listener);
@@ -112,10 +119,23 @@ var AnimationRecorder = (function () {
         this.recorder.throwRecordError(animationRecordError);
     };
     ;
-    AnimationRecorder.prototype.tempDestroy = function () {
-        this.recorder.destroy();
-    };
     AnimationRecorder.prototype.destroy = function () {
+        var _this = this;
+        if (!this.config) {
+            throw 'Please execute init method before destroy';
+        }
+        else if (this.animation) {
+            this.destroy = function () {
+                _this.animation.destroy();
+                return _this.recorder.destroy();
+            };
+        }
+        else {
+            this.destroy = function () {
+                return _this.recorder.destroy();
+            };
+        }
+        this.destroy();
     };
     return AnimationRecorder;
 }());

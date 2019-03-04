@@ -2,12 +2,12 @@ import { AnimationRecordInterface, AnimationRecordError, AnimationRecordEvents, 
 import { WaveAnimationInterface } from "./interface/WaveAnimationInterface";
 import { WaveAnimation } from "./WaveAnimation";
 import { Recorder } from "./Recorder";
-import { RecordEvent } from "./interface/RecorderInterface";
+import { RecordEvent, RecorderInterface } from "./interface/RecorderInterface";
 
 export class AnimationRecorder implements AnimationRecordInterface{
 
 
-    private recorder = new Recorder();
+    private recorder:RecorderInterface = new Recorder();
 
     private animation: WaveAnimationInterface;
 
@@ -29,41 +29,50 @@ export class AnimationRecorder implements AnimationRecordInterface{
                 }
                 this.animation.Volum = sum * 0.01;
             });
-            this.start = async ()=> {
-                const promise = await this.tempStart();
-                this.animation.start();
-                return promise;
-            };
-            this.stop = () => {
-                this.animation.stop();
-                return this.recorder.stop();
-            };
-            this.destroy = () => {
-                this.animation.destroy();
-                this.recorder.destroy();
-            }
-        }else{
-            this.start = this.tempStart;
-            this.stop = this.tempStop;
-            this.destroy = this.tempDestroy;
         }
     }
 
-    private async tempStart(){
-        return await  this.recorder.start();
-    }
+    async start(): Promise<void> {
+        
+        if(!this.config){
 
+            throw 'Please execute init method before start';
+        }else if(this.animation){
 
-    start(): Promise<void> {
-        throw 'Please execute init method before start';
-    }
+            this.start = async () => {
+                this.animation.start();
+                return  await  this.recorder.start();
+            }
+            
+        }else{
 
-    private tempStop(): Blob{
-        return this.recorder.stop();
+            this.start = async () => {
+                return  await  this.recorder.start();
+            }
+        }
+
+        return this.start();
     }
 
     stop(): Blob{
-        throw 'Please execute init method before stop';
+
+        if(!this.config){
+
+            throw 'Please execute init method before stop';
+        }else if(this.animation){
+
+            this.stop =  () => {
+                this.animation.stop();
+                return   this.recorder.stop();
+            }
+        }else{
+
+            this.stop = () => {
+                return   this.recorder.stop();
+            }
+        }
+
+        return this.stop();
     }
 
     addEventListener<K extends keyof AnimationRecordEvents>( animationRecordEventName: K, listener: (event: AnimationRecordEvents[K])=> void ){
@@ -77,13 +86,26 @@ export class AnimationRecorder implements AnimationRecordInterface{
     throwRecordError(animationRecordError: AnimationRecordError){
         this.recorder.throwRecordError( animationRecordError );
     };
-   
-    private tempDestroy(){
-        this.recorder.destroy();
-    }
 
     destroy(){
 
+        if(!this.config){
+
+            throw 'Please execute init method before destroy';
+        }else if(this.animation){
+
+            this.destroy =  () => {
+                this.animation.destroy();
+                return this.recorder.destroy();
+            }
+            
+        }else{
+
+            this.destroy = () => {
+                return this.recorder.destroy();
+            }
+        }
+        this.destroy();
     }
 
 }

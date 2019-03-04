@@ -6,7 +6,14 @@ recorder.init({
     }
 },document.body);
 let isStart = false;
+let lastTouchMiles = 0;
 window.addEventListener('touchend', async ()=> {
+
+    const now = Date.now();
+    // if( now - lastTouchMiles < 500){
+    //     recorder.destroy();
+    //     return;
+    // }
     if(isStart){
         recorder.stop();
         isStart = false;
@@ -14,21 +21,18 @@ window.addEventListener('touchend', async ()=> {
         recorder.start();
         isStart = true;
     }
+    lastTouchMiles = Date.now();
 });
-// AudioContext = null;
-// alert(webkitAudioContext );
 
 recorder.addEventListener('error', event => {
     alert(event);
 })
 
-recorder.addEventListener('start', event =>{
+recorder.addEventListener('statechange', event =>{
     console.log(event);
 })
 recorder.addEventListener('stop', event => {
     console.log(event);
 })
-recorder.addEventListener('audioprocess', event => {
-    // document.body.innerHTML = event.data;
-    // console.log(event);
-})
+
+

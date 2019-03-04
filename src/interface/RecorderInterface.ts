@@ -2,11 +2,9 @@ export interface RecordEvents{
 
     "audioprocess":  RecordEvent<Float32Array>;
 
-    "start": RecordEvent<null>;
-
-    "stop": RecordEvent<null>;
-
     "destroy": RecordEvent<null>;
+
+    "stateChange": RecordEvent<AudioContextState>;
     
     "error": RecordError;
 }
@@ -55,9 +53,9 @@ export interface RcorderConfig {
 
 export interface RecorderInterface {
 
-    init():void;
+    init(config?: RcorderConfig):void;
 
-    start(): void;
+    start():Promise<void>;
 
     stop(): Blob;
 
@@ -67,4 +65,5 @@ export interface RecorderInterface {
 
     removeEventListener<K extends keyof RecordEvents>(animationRecordEventName: K, listener: (event: RecordEvents[K]) => void ): void;
 
+    throwRecordError(recordError: RecordError): void;
 }
