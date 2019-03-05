@@ -81,7 +81,6 @@ var Recorder = (function () {
                                 case 1:
                                     _b.trys.push([1, 3, , 4]);
                                     this.audioContext = this.audioContext || this.createAudioContext();
-                                    this.audioContext.resume();
                                     this.audioContext.onstatechange = function (event) {
                                         _this.state = event.target.state;
                                         _this.eventEmit.emit('statechange', new RecordEvent('statechange', _this.state));
@@ -95,6 +94,7 @@ var Recorder = (function () {
                                     this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
                                     this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
                                     this.scriptProcessorNode.connect(this.audioContext.destination);
+                                    this.audioContext.resume();
                                     return [3, 4];
                                 case 3:
                                     error_1 = _b.sent();

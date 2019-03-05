@@ -30,12 +30,10 @@ export class Recorder implements RecorderInterface {
             throw 'Please execute init method before start.';
         }else{
             this.start = async () => {
-
                 if( 'suspended' === this.state ){
 
                     try{
                         this.audioContext = this.audioContext ||this.createAudioContext();
-                        this.audioContext.resume();
                         this.audioContext.onstatechange = (event: Event) => {
                             this.state = <AudioContextState>(<any>event.target).state;
                             this.eventEmit.emit('statechange', new RecordEvent<AudioContextState>('statechange', this.state))
@@ -47,6 +45,7 @@ export class Recorder implements RecorderInterface {
                         this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(mediaStream);
                         this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
                         this.scriptProcessorNode.connect(this.audioContext.destination);
+                        this.audioContext.resume();
                         // this.eventEmit.emit('start', new RecordEvent<null>('start', null));
                     }catch(error){
                         this.throwRecordError(error);
