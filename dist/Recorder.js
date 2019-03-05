@@ -162,7 +162,7 @@ var Recorder = (function () {
         return offset;
     };
     Recorder.prototype.getUserMedia = function (constrians) {
-        if (navigator.mediaDevices.getUserMedia) {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             return navigator.mediaDevices.getUserMedia(constrians);
         }
         else if (navigator.getUserMedia) {

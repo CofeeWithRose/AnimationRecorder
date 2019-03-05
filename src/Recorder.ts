@@ -133,7 +133,7 @@ export class Recorder implements RecorderInterface {
     
     private getUserMedia(constrians: MediaStreamConstraints){
         
-        if(navigator.mediaDevices.getUserMedia){
+        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
             return navigator.mediaDevices.getUserMedia(constrians );
         }else if(navigator.getUserMedia){
             return new Promise<MediaStream>( (
