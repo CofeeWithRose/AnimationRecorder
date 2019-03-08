@@ -57,7 +57,9 @@ export interface RecorderInterface {
 
     start():Promise<void>;
 
-    stop(): Blob;
+    stop(): void;
+
+    exportAudio(): Blob;
 
     destroy(): void;
 

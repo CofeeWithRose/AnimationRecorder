@@ -1,3 +1,16 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -35,9 +48,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 import { WaveAnimation } from "./WaveAnimation";
 import { Recorder } from "./Recorder";
-var AnimationRecorder = (function () {
+var AnimationRecorder = (function (_super) {
+    __extends(AnimationRecorder, _super);
     function AnimationRecorder() {
-        this.recorder = new Recorder();
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.recorder = new Recorder();
+        return _this;
     }
     AnimationRecorder.prototype.init = function (config, containerElement) {
         var _this = this;
@@ -138,6 +154,6 @@ var AnimationRecorder = (function () {
         this.destroy();
     };
     return AnimationRecorder;
-}());
+}(Recorder));
 export { AnimationRecorder };
 //# sourceMappingURL=index.js.map

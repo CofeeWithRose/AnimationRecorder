@@ -71,15 +71,15 @@ var Recorder = (function () {
                 }
                 else {
                     this.start = function () { return __awaiter(_this, void 0, void 0, function () {
-                        var _a, bufferSize, numChannels, mediaStream, error_1;
+                        var _a, bufferSize, numChannels, _b, error_1;
                         var _this = this;
-                        return __generator(this, function (_b) {
-                            switch (_b.label) {
+                        return __generator(this, function (_c) {
+                            switch (_c.label) {
                                 case 0:
                                     if (!('suspended' === this.state)) return [3, 4];
-                                    _b.label = 1;
+                                    _c.label = 1;
                                 case 1:
-                                    _b.trys.push([1, 3, , 4]);
+                                    _c.trys.push([1, 3, , 4]);
                                     this.audioContext = this.audioContext || this.createAudioContext();
                                     this.audioContext.onstatechange = function (event) {
                                         _this.state = event.target.state;
@@ -88,16 +88,17 @@ var Recorder = (function () {
                                     _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
                                     this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
                                     this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
+                                    _b = this;
                                     return [4, this.getUserMedia({ audio: true })];
                                 case 2:
-                                    mediaStream = _b.sent();
-                                    this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(mediaStream);
+                                    _b.mediaStream = _c.sent();
+                                    this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
                                     this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
                                     this.scriptProcessorNode.connect(this.audioContext.destination);
                                     this.audioContext.resume();
                                     return [3, 4];
                                 case 3:
-                                    error_1 = _b.sent();
+                                    error_1 = _c.sent();
                                     this.throwRecordError(error_1);
                                     return [3, 4];
                                 case 4: return [2];
@@ -123,15 +124,18 @@ var Recorder = (function () {
     };
     Recorder.prototype.stop = function () {
         if ('running' === this.state) {
+            this.mediaStream.getAudioTracks().forEach(function (track) { return track.stop(); });
             this.scriptProcessorNode.disconnect();
             this.mediaStreamAudioSourceNode.disconnect();
             this.audioContext.suspend();
-            var waveBlob = this.encodeWave();
             this.scriptProcessorNode = null;
             this.mediaStreamAudioSourceNode = null;
-            this.recordData = new Array();
-            return waveBlob;
         }
+    };
+    Recorder.prototype.exportAudio = function () {
+        var waveBlob = this.encodeWave();
+        this.recordData = new Array();
+        return waveBlob;
     };
     Recorder.prototype.addEventListener = function (animationRecordEventName, callback) {
         this.eventEmit.addListener(animationRecordEventName, callback);
@@ -176,6 +180,7 @@ var Recorder = (function () {
     };
     Recorder.prototype.destroy = function () {
         this.audioContext.close();
+        this.audioContext = null;
         this.eventEmit.emit('destroy', new RecordEvent('destroy', null));
     };
     return Recorder;

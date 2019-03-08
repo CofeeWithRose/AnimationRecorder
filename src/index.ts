@@ -4,14 +4,14 @@ import { WaveAnimation } from "./WaveAnimation";
 import { Recorder } from "./Recorder";
 import { RecordEvent, RecorderInterface } from "./interface/RecorderInterface";
 
-export class AnimationRecorder implements AnimationRecordInterface{
+export class AnimationRecorder extends Recorder implements AnimationRecordInterface  {
 
 
     private recorder:RecorderInterface = new Recorder();
 
     private animation: WaveAnimationInterface;
 
-    private config: AnimationRecordConfig;
+    protected config: AnimationRecordConfig;
     
     init(config?: AnimationRecordConfig, containerElement?: HTMLElement){
 
@@ -54,7 +54,7 @@ export class AnimationRecorder implements AnimationRecordInterface{
         return this.start();
     }
 
-    stop(): Blob{
+    stop(): void{
 
         if(!this.config){
 

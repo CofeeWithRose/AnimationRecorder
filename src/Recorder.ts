@@ -7,7 +7,7 @@ export class Recorder implements RecorderInterface {
 
     private audioContext: AudioContext;
 
-    private config:RcorderConfig;
+    protected config:RcorderConfig;
 
     private mediaStreamAudioSourceNode: MediaStreamAudioSourceNode;
 
@@ -18,6 +18,8 @@ export class Recorder implements RecorderInterface {
     private recordData = new Array<Float32Array>();
 
     private state: AudioContextState = 'suspended'; 
+
+    private mediaStream: MediaStream;
 
     init( config?: RcorderConfig ){
         this.config = {bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav', ...config};
@@ -41,8 +43,8 @@ export class Recorder implements RecorderInterface {
                         const { bufferSize, numChannels } = this.config;
                         this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
                         this.scriptProcessorNode.addEventListener( 'audioprocess', this.audioprocess );
-                        const mediaStream: MediaStream  = await this.getUserMedia({ audio: true});
-                        this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(mediaStream);
+                        this.mediaStream  = await this.getUserMedia({ audio: true});
+                        this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(this.mediaStream);
                         this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
                         this.scriptProcessorNode.connect(this.audioContext.destination);
                         this.audioContext.resume();
@@ -73,18 +75,21 @@ export class Recorder implements RecorderInterface {
     stop(){
 
         if( 'running' === this.state ){
+            this.mediaStream.getAudioTracks().forEach( track => track.stop());
             this.scriptProcessorNode.disconnect();
             this.mediaStreamAudioSourceNode.disconnect();
             this.audioContext.suspend();
-            // this.eventEmit.emit('stop', new RecordEvent<null>('stop', null));
-            const waveBlob = this.encodeWave();
-
             this.scriptProcessorNode = null;
             this.mediaStreamAudioSourceNode = null;
-            this.recordData = new Array<Float32Array>();
-            return waveBlob;
+          
         }
         
+    }
+
+    exportAudio(){
+        const waveBlob = this.encodeWave();
+        this.recordData = new Array<Float32Array>();
+        return waveBlob;
     }
 
     addEventListener<K extends keyof AnimationRecordEvents>( 
@@ -152,6 +157,7 @@ export class Recorder implements RecorderInterface {
 
     destroy(){
         this.audioContext.close();
+        this.audioContext = null;
         this.eventEmit.emit('destroy', new RecordEvent<null>('destroy', null));
     }
 }
