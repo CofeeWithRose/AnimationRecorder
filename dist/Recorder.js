@@ -51,12 +51,17 @@ var Recorder = (function () {
     function Recorder() {
         var _this = this;
         this.eventEmit = new EventEmitter();
-        this.recordData = new Array();
+        this.recordData = [new Array()];
         this.state = 'suspended';
         this.audioprocess = function (audioProcessingEvent) {
-            var data = audioProcessingEvent.inputBuffer.getChannelData(0);
-            _this.recordData.push(data);
-            _this.eventEmit.emit('audioprocess', new RecordEvent('audioprocess', data));
+            var channelNumber = audioProcessingEvent.inputBuffer.numberOfChannels;
+            var res = new Array();
+            for (var i = 0; i < channelNumber; i++) {
+                var data = audioProcessingEvent.inputBuffer.getChannelData(i);
+                res.push(data);
+            }
+            _this.recordData.push(res);
+            _this.eventEmit.emit('audioprocess', new RecordEvent('audioprocess', res));
         };
     }
     Recorder.prototype.init = function (config) {
@@ -86,6 +91,7 @@ var Recorder = (function () {
                                         _this.eventEmit.emit('statechange', new RecordEvent('statechange', _this.state));
                                     };
                                     _a = this.config, bufferSize = _a.bufferSize, numChannels = _a.numChannels;
+                                    this.analyserNode = this.audioContext.createAnalyser();
                                     this.scriptProcessorNode = this.audioContext.createScriptProcessor(bufferSize, numChannels, numChannels);
                                     this.scriptProcessorNode.addEventListener('audioprocess', this.audioprocess);
                                     _b = this;
@@ -93,7 +99,8 @@ var Recorder = (function () {
                                 case 2:
                                     _b.mediaStream = _c.sent();
                                     this.mediaStreamAudioSourceNode = this.audioContext.createMediaStreamSource(this.mediaStream);
-                                    this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
+                                    this.mediaStreamAudioSourceNode.connect(this.analyserNode);
+                                    this.analyserNode.connect(this.scriptProcessorNode);
                                     this.scriptProcessorNode.connect(this.audioContext.destination);
                                     this.audioContext.resume();
                                     return [3, 4];
@@ -134,7 +141,7 @@ var Recorder = (function () {
     };
     Recorder.prototype.exportAudio = function () {
         var waveBlob = this.encodeWave();
-        this.recordData = new Array();
+        this.recordData = [new Array()];
         return waveBlob;
     };
     Recorder.prototype.addEventListener = function (animationRecordEventName, callback) {
@@ -145,6 +152,17 @@ var Recorder = (function () {
         this.eventEmit.removeListener(animationRecordEventName, callback);
     };
     ;
+    Recorder.prototype.getFloatTimeDomainData = function (array) {
+        try {
+            if (this.analyserNode) {
+                this.analyserNode.getByteFrequencyData(array);
+                return true;
+            }
+        }
+        catch (e) {
+            this.throwRecordError(e);
+        }
+    };
     Recorder.prototype.throwRecordError = function (error) {
         this.eventEmit.emit('error', error);
         console.error(error);

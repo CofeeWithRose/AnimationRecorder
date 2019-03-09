@@ -12,6 +12,8 @@ export class AnimationRecorder extends Recorder implements AnimationRecordInterf
     private animation: WaveAnimationInterface;
 
     protected config: AnimationRecordConfig;
+
+    private volumArray = new Uint8Array(1024);
     
     init(config?: AnimationRecordConfig, containerElement?: HTMLElement){
 
@@ -20,30 +22,35 @@ export class AnimationRecorder extends Recorder implements AnimationRecordInterf
   
         if( containerElement){
             this.animation = new WaveAnimation(containerElement, this.config.waveAnimationConfig);
-            this.recorder.addEventListener('audioprocess',( event:RecordEvent<Float32Array> ) => {
-                let sum = 0;
-                const data = event.data;
-                const step = Math.floor( data.length * 0.01 );
-                for(let i = 0; i < data.length; i+= step){
-                    sum += Math.abs(data[i]);
-                }
-                this.animation.Volum = sum * 0.01;
-            });
+            // this.recorder.addEventListener('audioprocess', this.setAnimationVolum);
+            this.recorder.addEventListener('statechange', this.setAnimationController);
+            this.animation.beforeRender = () => {
+                    if(this.recorder.getFloatTimeDomainData(this.volumArray)){
+                        let sum = 0;
+                        this.volumArray.forEach( val => {
+                            sum+= val;
+                        })
+                        this.animation.Volum = sum/(1024 * 255);
+                    }
+            }
         }
     }
 
+    private setAnimationController =  (event:RecordEvent<AudioContextState>) => {
+        const type: AudioContextState = event.data;
+        console.log('type')
+        if('running' === type){
+            this.animation.start();
+        }else{
+            this.animation.stop();
+        }
+    }
+    
     async start(): Promise<void> {
         
         if(!this.config){
 
             throw 'Please execute init method before start';
-        }else if(this.animation){
-
-            this.start = async () => {
-                this.animation.start();
-                return  await  this.recorder.start();
-            }
-            
         }else{
 
             this.start = async () => {
@@ -59,12 +66,6 @@ export class AnimationRecorder extends Recorder implements AnimationRecordInterf
         if(!this.config){
 
             throw 'Please execute init method before stop';
-        }else if(this.animation){
-
-            this.stop =  () => {
-                this.animation.stop();
-                return   this.recorder.stop();
-            }
         }else{
 
             this.stop = () => {
@@ -92,16 +93,10 @@ export class AnimationRecorder extends Recorder implements AnimationRecordInterf
         if(!this.config){
 
             throw 'Please execute init method before destroy';
-        }else if(this.animation){
-
-            this.destroy =  () => {
-                this.animation.destroy();
-                return this.recorder.destroy();
-            }
-            
         }else{
 
             this.destroy = () => {
+                this.recorder.removeEventListener('statechange', this.setAnimationController);
                 return this.recorder.destroy();
             }
         }

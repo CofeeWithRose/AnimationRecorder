@@ -50,19 +50,30 @@ export class WaveAnimation implements WaveAnimationInterface{
 
     private isRunning = false;
 
-    private MIN_VOLUM = 0.1;
+    private MIN_VOLUM = 0.08;
 
     private volum = this.MIN_VOLUM;
 
 
     private lastVolum = this.MIN_VOLUM;
 
+    private volumAutoScale = 1;
+
+    private maxInputVolum = 0;
+
+
+
+
     get Volum() {
         return this.volum
     }
 
     set Volum(volum: number){
-        this.volum = Math.max(this.MIN_VOLUM,Math.min(volum * 3+this.MIN_VOLUM, 1));
+        this.volum = Math.max(this.MIN_VOLUM,Math.min( this.volumAutoScale * volum + this.MIN_VOLUM, 1));
+        if(volum > this.maxInputVolum){
+            this.maxInputVolum = volum;
+            this.volumAutoScale = 1/this.maxInputVolum;
+        }
     }
 
     private initCanvas( container: HTMLElement ){
@@ -115,8 +126,9 @@ export class WaveAnimation implements WaveAnimationInterface{
     }
 
     private _tempRun = () => {
+        this.beforeRender();
         this.context.clearRect(0,0, this.width, this.height);
-        const fixedVolum = this.lastVolum + (this.volum - this.lastVolum) * 0.2;
+        const fixedVolum = this.lastVolum + (this.volum - this.lastVolum) * 0.1;
         for(let i = 0; i < this.waveInfoArray.length; i++){
             const waveInfo = this.waveInfoArray[i];
             this.paintWave( waveInfo.offesetX, waveInfo.color, (i+1)/this.waveInfoArray.length, fixedVolum  );
@@ -143,6 +155,10 @@ export class WaveAnimation implements WaveAnimationInterface{
     }
 
     private run = () => {
+
+    }
+
+    beforeRender = () =>{
 
     }
 }

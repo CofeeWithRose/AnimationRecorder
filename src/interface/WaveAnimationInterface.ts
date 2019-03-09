@@ -18,4 +18,6 @@ export interface WaveAnimationInterface {
 
     destroy(): void;
 
+    beforeRender: () => void
+
 }

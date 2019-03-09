@@ -53,6 +53,17 @@ var AnimationRecorder = (function (_super) {
     function AnimationRecorder() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.recorder = new Recorder();
+        _this.volumArray = new Uint8Array(1024);
+        _this.setAnimationController = function (event) {
+            var type = event.data;
+            console.log('type');
+            if ('running' === type) {
+                _this.animation.start();
+            }
+            else {
+                _this.animation.stop();
+            }
+        };
         return _this;
     }
     AnimationRecorder.prototype.init = function (config, containerElement) {
@@ -61,15 +72,16 @@ var AnimationRecorder = (function (_super) {
         this.recorder.init(config);
         if (containerElement) {
             this.animation = new WaveAnimation(containerElement, this.config.waveAnimationConfig);
-            this.recorder.addEventListener('audioprocess', function (event) {
-                var sum = 0;
-                var data = event.data;
-                var step = Math.floor(data.length * 0.01);
-                for (var i = 0; i < data.length; i += step) {
-                    sum += Math.abs(data[i]);
+            this.recorder.addEventListener('statechange', this.setAnimationController);
+            this.animation.beforeRender = function () {
+                if (_this.recorder.getFloatTimeDomainData(_this.volumArray)) {
+                    var sum_1 = 0;
+                    _this.volumArray.forEach(function (val) {
+                        sum_1 += val;
+                    });
+                    _this.animation.Volum = sum_1 / (1024 * 255);
                 }
-                _this.animation.Volum = sum * 0.01;
-            });
+            };
         }
     };
     AnimationRecorder.prototype.start = function () {
@@ -78,18 +90,6 @@ var AnimationRecorder = (function (_super) {
             return __generator(this, function (_a) {
                 if (!this.config) {
                     throw 'Please execute init method before start';
-                }
-                else if (this.animation) {
-                    this.start = function () { return __awaiter(_this, void 0, void 0, function () {
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    this.animation.start();
-                                    return [4, this.recorder.start()];
-                                case 1: return [2, _a.sent()];
-                            }
-                        });
-                    }); };
                 }
                 else {
                     this.start = function () { return __awaiter(_this, void 0, void 0, function () {
@@ -109,12 +109,6 @@ var AnimationRecorder = (function (_super) {
         var _this = this;
         if (!this.config) {
             throw 'Please execute init method before stop';
-        }
-        else if (this.animation) {
-            this.stop = function () {
-                _this.animation.stop();
-                return _this.recorder.stop();
-            };
         }
         else {
             this.stop = function () {
@@ -140,14 +134,9 @@ var AnimationRecorder = (function (_super) {
         if (!this.config) {
             throw 'Please execute init method before destroy';
         }
-        else if (this.animation) {
-            this.destroy = function () {
-                _this.animation.destroy();
-                return _this.recorder.destroy();
-            };
-        }
         else {
             this.destroy = function () {
+                _this.recorder.removeEventListener('statechange', _this.setAnimationController);
                 return _this.recorder.destroy();
             };
         }

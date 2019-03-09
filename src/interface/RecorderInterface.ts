@@ -1,10 +1,8 @@
 export interface RecordEvents{
 
-    "audioprocess":  RecordEvent<Float32Array>;
-
     "destroy": RecordEvent<null>;
 
-    "stateChange": RecordEvent<AudioContextState>;
+    "statechange": RecordEvent<AudioContextState>;
     
     "error": RecordError;
 }
@@ -68,4 +66,6 @@ export interface RecorderInterface {
     removeEventListener<K extends keyof RecordEvents>(animationRecordEventName: K, listener: (event: RecordEvents[K]) => void ): void;
 
     throwRecordError(recordError: RecordError): void;
+
+    getFloatTimeDomainData(array: Uint8Array):boolean;
 }

@@ -22,17 +22,20 @@ var WaveAnimation = (function () {
         var _this = this;
         this.waveInfoArray = new Array();
         this.isRunning = false;
-        this.MIN_VOLUM = 0.1;
+        this.MIN_VOLUM = 0.08;
         this.volum = this.MIN_VOLUM;
         this.lastVolum = this.MIN_VOLUM;
+        this.volumAutoScale = 1;
+        this.maxInputVolum = 0;
         this.setCanvasSize = function () {
             var containerStyleInfo = getComputedStyle(_this.container);
             _this.width = _this.canvas.width = parseFloat(containerStyleInfo.width);
             _this.height = _this.canvas.height = parseFloat(containerStyleInfo.height);
         };
         this._tempRun = function () {
+            _this.beforeRender();
             _this.context.clearRect(0, 0, _this.width, _this.height);
-            var fixedVolum = _this.lastVolum + (_this.volum - _this.lastVolum) * 0.2;
+            var fixedVolum = _this.lastVolum + (_this.volum - _this.lastVolum) * 0.1;
             for (var i = 0; i < _this.waveInfoArray.length; i++) {
                 var waveInfo = _this.waveInfoArray[i];
                 _this.paintWave(waveInfo.offesetX, waveInfo.color, (i + 1) / _this.waveInfoArray.length, fixedVolum);
@@ -42,6 +45,8 @@ var WaveAnimation = (function () {
             requestAnimationFrame(_this.run);
         };
         this.run = function () {
+        };
+        this.beforeRender = function () {
         };
         this.config = __assign({ lineWidth: 2, waveCount: 3, colors: [
                 'rgba(255,152,152, 0.2)',
@@ -58,7 +63,11 @@ var WaveAnimation = (function () {
             return this.volum;
         },
         set: function (volum) {
-            this.volum = Math.max(this.MIN_VOLUM, Math.min(volum * 3 + this.MIN_VOLUM, 1));
+            this.volum = Math.max(this.MIN_VOLUM, Math.min(this.volumAutoScale * volum + this.MIN_VOLUM, 1));
+            if (volum > this.maxInputVolum) {
+                this.maxInputVolum = volum;
+                this.volumAutoScale = 1 / this.maxInputVolum;
+            }
         },
         enumerable: true,
         configurable: true

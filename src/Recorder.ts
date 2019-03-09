@@ -11,11 +11,13 @@ export class Recorder implements RecorderInterface {
 
     private mediaStreamAudioSourceNode: MediaStreamAudioSourceNode;
 
+    private analyserNode: AnalyserNode;
+
     private scriptProcessorNode: ScriptProcessorNode;
 
     private eventEmit = new  EventEmitter();
 
-    private recordData = new Array<Float32Array>();
+    private recordData = [new Array<Float32Array>()];
 
     private state: AudioContextState = 'suspended'; 
 
@@ -23,7 +25,7 @@ export class Recorder implements RecorderInterface {
 
     init( config?: RcorderConfig ){
         this.config = {bufferSize: 4096, numChannels: 2, mimeType: 'audio/wav', ...config};
-     
+        
     }
     
     async start():Promise<void>{
@@ -41,11 +43,13 @@ export class Recorder implements RecorderInterface {
                             this.eventEmit.emit('statechange', new RecordEvent<AudioContextState>('statechange', this.state))
                         };
                         const { bufferSize, numChannels } = this.config;
+                        this.analyserNode = this.audioContext.createAnalyser();
                         this.scriptProcessorNode = this.audioContext.createScriptProcessor( bufferSize, numChannels, numChannels );
                         this.scriptProcessorNode.addEventListener( 'audioprocess', this.audioprocess );
                         this.mediaStream  = await this.getUserMedia({ audio: true});
                         this.mediaStreamAudioSourceNode =  this.audioContext.createMediaStreamSource(this.mediaStream);
-                        this.mediaStreamAudioSourceNode.connect(this.scriptProcessorNode);
+                        this.mediaStreamAudioSourceNode.connect(this.analyserNode);
+                        this.analyserNode.connect(this.scriptProcessorNode);
                         this.scriptProcessorNode.connect(this.audioContext.destination);
                         this.audioContext.resume();
                         // this.eventEmit.emit('start', new RecordEvent<null>('start', null));
@@ -88,7 +92,7 @@ export class Recorder implements RecorderInterface {
 
     exportAudio(){
         const waveBlob = this.encodeWave();
-        this.recordData = new Array<Float32Array>();
+        this.recordData = [new Array<Float32Array>()];
         return waveBlob;
     }
 
@@ -102,8 +106,21 @@ export class Recorder implements RecorderInterface {
         animationRecordEventName: K, callback: (event: AnimationRecordEvents[K]) => void 
     ): void {
         this.eventEmit.removeListener( animationRecordEventName, callback);
+        
     };
 
+    getFloatTimeDomainData(array: Uint8Array){
+        try{
+            if(this.analyserNode){
+            
+                this.analyserNode.getByteFrequencyData(array);
+                return true;
+            } 
+        }catch(e){
+            this.throwRecordError(e);
+        }
+       
+    }
 
     throwRecordError(error: RecordError){
         this.eventEmit.emit('error', error);
@@ -125,14 +142,19 @@ export class Recorder implements RecorderInterface {
         for(let i = 0; i< content.length; i++ ){
             dataView.setUint8(offset, content.charCodeAt(i));
             offset++;
-        }
+        } 
         return offset;
     }
 
     private audioprocess = (audioProcessingEvent: AudioProcessingEvent) => {
-        const data = audioProcessingEvent.inputBuffer.getChannelData(0);
-        this.recordData.push(data);
-        this.eventEmit.emit('audioprocess', new RecordEvent<Float32Array>('audioprocess', data));
+        const channelNumber = audioProcessingEvent.inputBuffer.numberOfChannels;
+        let res = new Array<Float32Array>();
+        for(let i =0 ;i< channelNumber; i++){
+            const data = audioProcessingEvent.inputBuffer.getChannelData(i);
+            res.push(data);
+        }
+        this.recordData.push(res);
+        this.eventEmit.emit('audioprocess', new RecordEvent('audioprocess', res));
     }
 
     
